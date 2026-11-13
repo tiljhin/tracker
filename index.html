@@ -13,7 +13,7 @@
 :root {
   --bg: #0b0a0c; --card: #151217; --card2: #1c181f; --line: #2b2530;
   --txt: #ede6ea; --mut: #9a909c;
-  --dbd: #e0202a; --over: #8B3DFF; --flix: #f5b642;
+  --dbd: #e0202a; --over: #8B3DFF; --flix: #f5b642; --roleta: #e9b25a;
   --cor: var(--dbd);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,7 +30,7 @@ header { position: relative; text-align: center; margin-bottom: 22px; }
 .logo { font-family: 'Evil Vampire', Georgia, serif; font-size: 44px; letter-spacing: 2px; color: var(--cor); text-shadow: 0 0 18px color-mix(in srgb, var(--cor) 45%, transparent); transition: color .4s; }
 .sub { color: var(--mut); font-size: 15px; margin-top: 2px; }
 
-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
 nav button {
   background: var(--card); border: 1px solid var(--line); color: var(--mut);
   font: 700 16px 'Carlito', Calibri, sans-serif; letter-spacing: 1px;
@@ -92,16 +92,22 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 
 /* ---------- modo admin (só com ?admin no link) ---------- */
 .adm { display: flex; gap: 6px; margin-left: auto; }
-.adm button, .dlg button {
+.adm button, .dlg button, .rolbtns button {
   background: var(--card2); border: 1px solid var(--line); color: var(--txt);
   font: 700 12px 'Carlito', Calibri, sans-serif; letter-spacing: 1px;
   padding: 6px 10px; border-radius: 8px; cursor: pointer;
 }
-.adm button:hover, .dlg button:hover { border-color: var(--cor); }
+.adm button:hover, .dlg button:hover, .rolbtns button:hover { border-color: var(--cor); }
 .adm button[data-acao="aceito"], .dlg button.pri { background: var(--cor); border-color: var(--cor); color: #fff; }
 .adm-wait { margin-left: auto; font-size: 13px; color: var(--mut); }
 .topo-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 .topo-row > div:first-child { flex: 1; min-width: 0; }
+
+/* controles da roleta (modo admin) */
+.rolbtns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.rolbtns button { padding: 10px 14px; font-size: 13px; }
+.rolbtns button[data-rol="girar"] { background: var(--cor); border-color: var(--cor); color: #fff; }
+.rol-msg { min-height: 16px; margin-top: 8px; font-size: 13px; color: var(--mut); }
 
 /* selo no topo, à direita (em cima do BIGOFLIX): 🔒 deslogado · ● ADMIN logado */
 .adm-badge {
@@ -137,6 +143,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
     <button data-aba="dbd" data-nome="DBD">DBD</button>
     <button data-aba="over" data-nome="OVER">OVER</button>
     <button data-aba="flix" data-nome="BIGOFLIX">BIGOFLIX</button>
+    <button data-aba="roleta" data-nome="ROLETA">ROLETA</button>
   </nav>
 
   <div class="status">
@@ -152,7 +159,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
   </div>
 
   <div class="card" id="feitosCard" hidden>
-    <div class="lbl">FEITOS NESTA LIVE</div>
+    <div class="lbl" id="feitosLbl">FEITOS NESTA LIVE</div>
     <ol id="feitos"></ol>
   </div>
 
@@ -174,7 +181,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="comoCard">
     <div class="lbl">COMO PEDIR</div>
     <div class="como" id="como"></div>
     <a class="btn" id="btnPix" target="_blank" rel="noopener">PEDIR PELO LIVEPIX</a>
@@ -215,7 +222,8 @@ const ABAS = {
   over: { cor: '--over', agora: 'HERÓI AGORA',  vazio: 'Nenhum herói na fila. Seja o primeiro!', outro: 'DBD',
           como: 'Mande um Pix pelo LivePix com o <b>nome do herói</b> na mensagem.<br><b>R$ 1</b> escolhe o herói da próxima partida.' },
   flix: { cor: '--flix', agora: 'FILME DA SEMANA', vazio: 'Nenhum pedido de filme ainda.',
-          como: 'Mande um Pix de <b>R$ 15</b> pelo LivePix com a palavra <b>filme</b> e o nome do filme na mensagem.' }
+          como: 'Mande um Pix de <b>R$ 15</b> pelo LivePix com a palavra <b>filme</b> e o nome do filme na mensagem.' },
+  roleta: { cor: '--roleta', agora: 'GIRANDO AGORA', vazio: 'Nenhum giro na fila.', outro: '', como: '' }
 };
 // etiqueta de cada origem (igual ao HUD)
 const TAGS = { doacao: 'PIX', sub: 'SUB', resub: 'RESUB', gift: 'GIFT', pontos: 'SUCOS' };
@@ -255,6 +263,172 @@ function botoes(i, noTopo) {
   return `<div class="adm">${noTopo ? '' : b('aceito', 'ACEITO')}${b('feito', 'FEITO')}${b('recusado', 'RECUSADO')}</div>`;
 }
 
+// ---------- ROLETA (aba própria: estado ao vivo + controle do admin) ----------
+function mmss(s) { s = Math.max(0, Math.ceil(s)); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); }
+
+function renderRoleta(d, offline, recebeu, linha) {
+  const fila = Array.isArray(d.fila) ? d.fila : [];
+  const des = Array.isArray(d.desafios) ? d.desafios : [];
+  const jogo = d.jogo === 'over' ? 'OVERWATCH' : 'DBD';
+
+  // status
+  let txt = 'Roleta offline', ok = false;
+  if (!offline) { txt = d.girando ? 'Girando agora' : 'Roleta online'; ok = true; }
+  $('pill').textContent = txt;
+  $('pill').className = 'pill' + (ok ? ' ok' : '');
+  $('upd').textContent = recebeu && linha.updated_at ? 'atualizado ' + haQuanto(linha.updated_at) : '';
+
+  // topo: jogo, dobro e desafio atual (com cronômetro)
+  const atual = des.find(x => x.inicio && !x.cumprido) || des.find(x => !x.inicio) || null;
+  let topo = `<div class="card">
+      <div class="lbl">JOGO NA RODA<small>${jogo}</small></div>
+      <div class="big">${fila.length ? fila.length + (fila.length > 1 ? ' giros na fila' : ' giro na fila') : 'Fila vazia'}</div>
+      <div class="who">${d.dobro ? 'Próxima doação vale em dobro' : 'Cada R$ de doação vira giros'}</div>
+    </div>`;
+
+  if (atual) {
+    const resta = atual.inicio && !atual.cumprido ? atual.total - (Date.now() - new Date(atual.inicio)) / 1000 : atual.total;
+    const rotulo = !atual.inicio ? 'DESAFIO AGUARDANDO' : (atual.cumprido ? 'DESAFIO CUMPRIDO' : 'DESAFIO EM ANDAMENTO');
+    topo += `<div class="card">
+      <div class="lbl">${rotulo}</div>
+      <div class="topo-row">
+        <div>
+          <div class="big">${esc(atual.nome)}</div>
+          <div class="who">${atual.quem ? '@' + esc(String(atual.quem).replace(/^@/, '')) : ''}</div>
+        </div>
+        <div class="big" style="font-size:28px;font-variant-numeric:tabular-nums">${atual.cumprido ? 'OK' : mmss(resta)}</div>
+      </div>
+    </div>`;
+  }
+
+  // controle do admin: só aparece com senha no modo admin
+  if (ADMIN && senha) {
+    topo += `<div class="card">
+      <div class="lbl">CONTROLE DA ROLETA</div>
+      <div class="rolbtns">
+        <button data-rol="girar">▶ GIRAR PRÓXIMO</button>
+        <button data-rol="desafio">⏱ DESAFIO</button>
+        <button data-rol="limpar">LIMPAR FILA</button>
+      </div>
+      <div class="rol-msg" id="rolMsg"></div>
+    </div>`;
+  }
+  $('topo').innerHTML = topo;
+
+  // fila de giros (quem girou pagou)
+  $('filaLbl').textContent = `GIROS NA FILA · ${fila.length}`;
+  $('lista').innerHTML = fila.length
+    ? fila.map((p, k) => `<li><span class="n">${k + 1}</span><div class="nm">Giro<small>${esc(p.quem)}</small></div></li>`).join('')
+    : `<li><div class="vazio" style="width:100%">${ABAS.roleta.vazio}</div></li>`;
+
+  // desafios na tela (aparecem no card de feitos)
+  $('feitosLbl').textContent = 'DESAFIOS NA TELA';
+  $('feitosCard').hidden = !des.length;
+  $('feitos').innerHTML = des.map(x => `<li><span class="n">${x.cumprido ? '✔' : '⏱'}</span><div class="nm">${esc(x.nome)}<small>${x.quem ? '@' + esc(String(x.quem).replace(/^@/, '')) : ''}</small></div></li>`).join('');
+
+  $('comoCard').hidden = true;
+}
+
+/* ---------- CALENDÁRIO (histórico de feitos, por dia) ---------- */
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const hojeD = new Date();
+const cal = { y: hojeD.getFullYear(), m: hojeD.getMonth(), dia: null, linhas: [] };
+
+async function carregarMes() {
+  const ini = new Date(cal.y, cal.m, 1).toISOString();
+  const fim = new Date(cal.y, cal.m + 1, 1).toISOString();
+  const cab = { headers: { apikey: SUPABASE_KEY } };
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/tracker_hist?select=aba,quem,escolha,build,origem,feito_em&and=(feito_em.gte.${ini},feito_em.lt.${fim})&order=feito_em.asc`, cab),
+      fetch(`${SUPABASE_URL}/rest/v1/roleta_hist?select=quem,resultado,jogo,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`, cab)
+    ]);
+    const a = r1.ok ? await r1.json() : [];
+    const b = r2.ok ? await r2.json() : [];
+    // giros da roleta entram no calendário com o mesmo formato dos outros
+    cal.linhas = a.concat(b.map(x => ({ aba: 'roleta', quem: x.quem, escolha: x.resultado, build: false, origem: '', feito_em: x.created_at })));
+    renderCal();
+  } catch (e) {}
+}
+
+function renderCal() {
+  if (!aba) return;
+  const porDia = {};
+  cal.linhas.filter(l => l.aba === aba).forEach(l => {
+    const d = new Date(l.feito_em).getDate();
+    (porDia[d] = porDia[d] || []).push(l);
+  });
+  const dias = Object.keys(porDia).map(Number);
+  const totalMes = dias.reduce((s, d) => s + porDia[d].length, 0);
+
+  // dia aberto: o escolhido · senão hoje (se tiver pedido) · senão o último dia com pedido
+  const ehMesAtual = cal.y === hojeD.getFullYear() && cal.m === hojeD.getMonth();
+  let dia = cal.dia;
+  if (!dia || !porDia[dia]) dia = (ehMesAtual && porDia[hojeD.getDate()]) ? hojeD.getDate() : (dias.length ? Math.max(...dias) : null);
+
+  $('calMes').textContent = `${MESES[cal.m]} ${cal.y}`;
+  $('calNext').disabled = ehMesAtual;
+  $('calTot').textContent = totalMes ? `· ${totalMes} no mês` : '';
+
+  let g = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(x => `<div class="cal-dow">${x}</div>`).join('');
+  const primeiro = new Date(cal.y, cal.m, 1).getDay();
+  const total = new Date(cal.y, cal.m + 1, 0).getDate();
+  for (let i = 0; i < primeiro; i++) g += '<div></div>';
+  for (let d = 1; d <= total; d++) {
+    const n = (porDia[d] || []).length;
+    const cls = 'cal-dia' + (n ? ' tem' : '') + (ehMesAtual && d === hojeD.getDate() ? ' hoje' : '') + (d === dia ? ' sel' : '');
+    g += `<button class="${cls}" data-dia="${d}"${n ? '' : ' disabled'}>${d}${n ? `<span class="cal-n">${n}</span>` : ''}</button>`;
+  }
+  $('calGrid').innerHTML = g;
+
+  const lista = dia ? porDia[dia] : [];
+  const rotulo = aba === 'roleta' ? 'GIROS' : 'FEITOS';
+  $('calTit').textContent = dia ? `${rotulo} EM ${pad(dia)}/${pad(cal.m + 1)}/${cal.y}` : 'NADA REGISTRADO NESTE MÊS';
+  $('calLista').innerHTML = lista.length
+    ? lista.map(l => {
+        const t = new Date(l.feito_em);
+        return `<li><span class="n">✔</span><div class="nm">${esc(l.escolha)}${tags(l)}<small>${esc(l.quem)} · ${pad(t.getHours())}:${pad(t.getMinutes())}</small></div></li>`;
+      }).join('')
+    : `<li><div class="vazio" style="width:100%">Os dias marcados no calendário têm registros.</div></li>`;
+}
+
+$('calGrid').addEventListener('click', e => {
+  const b = e.target.closest('.cal-dia.tem');
+  if (!b) return;
+  cal.dia = parseInt(b.dataset.dia, 10);
+  renderCal();
+});
+$('calPrev').addEventListener('click', () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
+$('calNext').addEventListener('click', () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
+
+/* ---------- BUSCA ---------- */
+async function rpc(fn, body) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    return r.ok;
+  } catch (e) { return false; }
+}
+
+async function buscar() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker?select=id,data,updated_at`, { headers: { apikey: SUPABASE_KEY } });
+    if (!r.ok) throw new Error(r.status);
+    dados = Object.fromEntries((await r.json()).map(l => [l.id, l]));
+    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : (dados.over?.data?.ativo === true ? 'over' : 'dbd');
+    // o HUD já aplicou o clique (a aba foi atualizada depois dele): libera o botão
+    const upd = new Date(dados[aba]?.updated_at || 0).getTime();
+    Object.keys(pend).forEach(id => { if (upd > pend[id] || Date.now() - pend[id] > 15000) delete pend[id]; });
+    render();
+  } catch (e) {
+    $('pill').textContent = 'sem conexão';
+    $('pill').className = 'pill';
+  }
+}
+
 function render() {
   if (!aba) return;
   const a = ABAS[aba], linha = dados[aba] || {}, d = linha.data || {};
@@ -265,10 +439,15 @@ function render() {
   // abas: pontinho na cor do jogo que está ativo na live
   document.querySelectorAll('#tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.aba === aba);
-    const ativo = b.dataset.aba !== 'flix' && dados[b.dataset.aba]?.data?.ativo === true;
+    const ativo = b.dataset.aba !== 'flix' && b.dataset.aba !== 'roleta' && dados[b.dataset.aba]?.data?.ativo === true;
     const c = `var(${ABAS[b.dataset.aba].cor})`;
     b.innerHTML = b.dataset.nome + (ativo ? `<span class="dot" style="background:${c};box-shadow:0 0 8px ${c}"></span>` : '');
   });
+
+  // aba da roleta: tela própria
+  if (aba === 'roleta') { renderRoleta(d, offline, recebeu, linha); renderCal(); return; }
+  $('comoCard').hidden = false;
+  $('feitosLbl').textContent = 'FEITOS NESTA LIVE';
 
   // status
   let txt = 'Live offline', ok = false;
@@ -325,100 +504,6 @@ function render() {
   $('btnPix').href = LIVEPIX;
 
   renderCal();
-}
-
-/* ---------- CALENDÁRIO (histórico de feitos, por dia) ---------- */
-const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-const hojeD = new Date();
-const cal = { y: hojeD.getFullYear(), m: hojeD.getMonth(), dia: null, linhas: [] };
-
-async function carregarMes() {
-  const ini = new Date(cal.y, cal.m, 1).toISOString();
-  const fim = new Date(cal.y, cal.m + 1, 1).toISOString();
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker_hist?select=aba,quem,escolha,build,origem,feito_em&and=(feito_em.gte.${ini},feito_em.lt.${fim})&order=feito_em.asc`,
-      { headers: { apikey: SUPABASE_KEY } });
-    if (!r.ok) return;
-    cal.linhas = await r.json();
-    renderCal();
-  } catch (e) {}
-}
-
-function renderCal() {
-  if (!aba) return;
-  const porDia = {};
-  cal.linhas.filter(l => l.aba === aba).forEach(l => {
-    const d = new Date(l.feito_em).getDate();
-    (porDia[d] = porDia[d] || []).push(l);
-  });
-  const dias = Object.keys(porDia).map(Number);
-  const totalMes = dias.reduce((s, d) => s + porDia[d].length, 0);
-
-  // dia aberto: o escolhido · senão hoje (se tiver pedido) · senão o último dia com pedido
-  const ehMesAtual = cal.y === hojeD.getFullYear() && cal.m === hojeD.getMonth();
-  let dia = cal.dia;
-  if (!dia || !porDia[dia]) dia = (ehMesAtual && porDia[hojeD.getDate()]) ? hojeD.getDate() : (dias.length ? Math.max(...dias) : null);
-
-  $('calMes').textContent = `${MESES[cal.m]} ${cal.y}`;
-  $('calNext').disabled = ehMesAtual;
-  $('calTot').textContent = totalMes ? `· ${totalMes} no mês` : '';
-
-  let g = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(x => `<div class="cal-dow">${x}</div>`).join('');
-  const primeiro = new Date(cal.y, cal.m, 1).getDay();
-  const total = new Date(cal.y, cal.m + 1, 0).getDate();
-  for (let i = 0; i < primeiro; i++) g += '<div></div>';
-  for (let d = 1; d <= total; d++) {
-    const n = (porDia[d] || []).length;
-    const cls = 'cal-dia' + (n ? ' tem' : '') + (ehMesAtual && d === hojeD.getDate() ? ' hoje' : '') + (d === dia ? ' sel' : '');
-    g += `<button class="${cls}" data-dia="${d}"${n ? '' : ' disabled'}>${d}${n ? `<span class="cal-n">${n}</span>` : ''}</button>`;
-  }
-  $('calGrid').innerHTML = g;
-
-  const lista = dia ? porDia[dia] : [];
-  $('calTit').textContent = dia ? `FEITOS EM ${pad(dia)}/${pad(cal.m + 1)}/${cal.y}` : 'NENHUM PEDIDO FEITO NESTE MÊS';
-  $('calLista').innerHTML = lista.length
-    ? lista.map(l => {
-        const t = new Date(l.feito_em);
-        return `<li><span class="n">✔</span><div class="nm">${esc(l.escolha)}${tags(l)}<small>${esc(l.quem)} · ${pad(t.getHours())}:${pad(t.getMinutes())}</small></div></li>`;
-      }).join('')
-    : `<li><div class="vazio" style="width:100%">Os dias marcados no calendário têm pedidos feitos.</div></li>`;
-}
-
-$('calGrid').addEventListener('click', e => {
-  const b = e.target.closest('.cal-dia.tem');
-  if (!b) return;
-  cal.dia = parseInt(b.dataset.dia, 10);
-  renderCal();
-});
-$('calPrev').addEventListener('click', () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
-$('calNext').addEventListener('click', () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
-
-/* ---------- BUSCA ---------- */
-async function rpc(fn, body) {
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    return r.ok;
-  } catch (e) { return false; }
-}
-
-async function buscar() {
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker?select=id,data,updated_at`, { headers: { apikey: SUPABASE_KEY } });
-    if (!r.ok) throw new Error(r.status);
-    dados = Object.fromEntries((await r.json()).map(l => [l.id, l]));
-    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : (dados.over?.data?.ativo === true ? 'over' : 'dbd');
-    // o HUD já aplicou o clique (a aba foi atualizada depois dele): libera o botão
-    const upd = new Date(dados[aba]?.updated_at || 0).getTime();
-    Object.keys(pend).forEach(id => { if (upd > pend[id] || Date.now() - pend[id] > 15000) delete pend[id]; });
-    render();
-  } catch (e) {
-    $('pill').textContent = 'sem conexão';
-    $('pill').className = 'pill';
-  }
 }
 
 let calTimer = null;
@@ -499,6 +584,20 @@ document.addEventListener('click', async e => {
   const ok = await rpc('tracker_acao', { segredo: senha, p_item: id, p_acao: acao });
   if (!ok) { delete pend[id]; avisar('erro'); render(); }
   else if (acao === 'feito') setTimeout(carregarMes, 8000); // o calendário pega o feito novo logo
+});
+
+// controle da roleta: manda o clique para a fila que a roleta lê a cada 2 s
+document.addEventListener('click', async e => {
+  const b = e.target.closest('.rolbtns button');
+  if (!b) return;
+  if (!senha) return abrirPopup();
+  const acao = b.dataset.rol;
+  if (acao === 'limpar' && !confirm('Zerar a fila de giros da roleta?')) return;
+  const msg = $('rolMsg');
+  if (msg) msg.textContent = 'enviando…';
+  const ok = await rpc('roleta_acao', { segredo: senha, p_acao: acao });
+  if (msg) msg.textContent = ok ? 'Enviado. A roleta pega em instantes.' : 'Erro ao enviar.';
+  if (!ok) avisar('erro');
 });
 
 $('tabs').addEventListener('click', e => {
