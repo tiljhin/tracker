@@ -26,8 +26,8 @@ body {
 .wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 40px; }
 
 header { position: relative; text-align: center; margin-bottom: 22px; }
-.logo { font-family: var(--rot); font-size: 38px; letter-spacing: 3px; text-transform: uppercase; color: var(--cl); text-shadow: 0 0 18px color-mix(in srgb, var(--cor) 45%, transparent); transition: color .4s; }
-.sub { color: var(--mut); font-size: 15px; margin-top: 2px; }
+.logo { display: block; width: min(420px, 86%); height: auto; margin: 0 auto; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--cor) 40%, transparent)); transition: filter .4s; }
+.sub { color: var(--mut); font-size: 15px; margin-top: 6px; }
 
 nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
 nav button {
@@ -136,11 +136,12 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .dlg-msg { min-height: 18px; margin-top: 8px; font-size: 13px; color: var(--mut); }
 .dlg-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 </style>
+<link rel="icon" href="icone.png">
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">TIL JHIN</div>
+    <img class="logo" src="logo.webp" width="900" height="256" alt="TIL JHIN">
     <div class="sub">Acompanhe a fila da live · Bigodinhos</div>
     <!-- modo admin: selo (só aparece com ?admin no link) -->
     <button id="admBadge" class="adm-badge" hidden></button>
