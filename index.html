@@ -40,8 +40,11 @@ nav button:hover { color: var(--txt); }
 nav button.on { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 22%, var(--card)); }
 nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; filter: drop-shadow(0 0 4px rgba(227,80,42,.45)); }
 @media (max-width: 560px) { nav button .emb { width: 18px; height: 18px; margin-right: 4px; } }
-.jogologo { text-align: center; margin: 2px 0 14px; }
-.jogologo img { height: 46px; max-width: 86%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(227,80,42,.35)); opacity: .95; }
+.status { position: relative; min-height: 34px; }
+.jogologo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+.jogologo[hidden] { display: none; }
+@media (max-width: 560px) { .jogologo { position: static; transform: none; order: 2; width: 100%; text-align: center; } .status { flex-wrap: wrap; } }
+.jogologo img { height: 36px; max-width: 86%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(227,80,42,.35)); opacity: .95; }
 nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
 
 .status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--mut); }
@@ -197,10 +200,10 @@ footer { position: relative; z-index: 1; }
 
   <div class="status">
     <span id="pill" class="pill">carregando…</span>
+    <div id="jogoLogo" class="jogologo" hidden></div>
     <span id="upd"></span>
   </div>
 
-  <div id="jogoLogo" class="jogologo" hidden></div>
   <div id="topo"></div>
 
   <div class="card">
