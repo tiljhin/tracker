@@ -38,6 +38,8 @@ nav button {
 nav button:hover { color: var(--txt); }
 @media (max-width: 560px) { nav { gap: 5px; } nav button { font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
 nav button.on { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 22%, var(--card)); }
+nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; filter: drop-shadow(0 0 4px rgba(227,80,42,.45)); }
+@media (max-width: 560px) { nav button .emb { width: 18px; height: 18px; margin-right: 4px; } }
 nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
 
 .status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--mut); }
@@ -261,6 +263,7 @@ const ADMIN_SEG     = 2;    // no modo admin, busca mais rápido
 const CAL_SEG       = 60;   // de quanto em quanto tempo o calendário se atualiza
 const OFFLINE_MIN   = 30;   // sem atualização há X min = "live offline"
 
+const EMB = { dbd: 'emb-dbd.webp', over: 'emb-over.webp' };
 const ABAS = {
   dbd:  {  agora: 'KILLER AGORA', vazio: 'Nenhum killer na fila. Seja o primeiro!', outro: 'Overwatch',
           como: 'Mande um Pix pelo LivePix com o <b>nome do killer</b> na mensagem.<br><b>R$ 1</b> escolhe o killer · <b>R$ 2</b> escolhe com build (escreva "build").' },
@@ -551,7 +554,7 @@ function render() {
   document.querySelectorAll('#tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.aba === aba);
     const ativo = !['flix', 'roleta', 'cassino'].includes(b.dataset.aba) && dados[b.dataset.aba]?.data?.ativo === true;
-    b.innerHTML = b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
+    b.innerHTML = (EMB[b.dataset.aba] ? `<img class="emb" src="${EMB[b.dataset.aba]}" alt="">` : '') + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
   });
 
   // aba da roleta: tela própria
