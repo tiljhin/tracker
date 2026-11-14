@@ -163,6 +163,14 @@ nav button.on { box-shadow: 0 0 18px color-mix(in srgb, var(--cor) 38%, transpar
 nav button { backdrop-filter: blur(2px); }
 footer { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) { .logo { animation: none; } #brasas { display: none; } }
+
+.potecard { display: flex; align-items: center; gap: 18px; }
+.pote { position: relative; flex: 0 0 132px; aspect-ratio: 300 / 340; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+.pote .vidro { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pote .moedas { position: absolute; left: 14%; right: 14%; top: 24%; bottom: 14%; overflow: hidden; border-radius: 42% 42% 46% 46% / 30% 30% 40% 40%; }
+.pote .moedas img { position: absolute; width: 27%; height: auto; }
+.potetxt { min-width: 0; }
+@media (max-width: 420px) { .pote { flex-basis: 104px; } }
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -372,6 +380,17 @@ function renderRoleta(d, offline, recebeu, linha) {
 const fmtN = v => Number(v || 0).toLocaleString('pt-BR');
 const plural = (n, um, varios) => `${fmtN(n)} ${n === 1 ? um : varios}`;
 
+// jarro de vidro que enche de moedas conforme o valor (moedas em posições fixas: não "pulam" a cada atualização)
+function pote(valor, cheio) {
+  const nivel = Math.max(0, Math.min(1, Number(valor) / (Number(cheio) > 0 ? Number(cheio) : 3000)));
+  const n = Math.round(nivel * 52) + 4, col = 5; let h = '';
+  for (let i = 0; i < n; i++) {
+    const r = Math.floor(i / col), s = Math.sin(i * 12.9898) * 43758.5453, j = s - Math.floor(s);
+    const x = ((i % col) + (r % 2) * .5) * 19 + (j - .5) * 5, y = r * 9.2 + (Math.sin(i * 7.7) + 1) * 1.6, rot = Math.round((j - .5) * 70);
+    h += `<img src="moeda.webp" alt="" style="left:${x.toFixed(1)}%;bottom:${y.toFixed(1)}%;transform:rotate(${rot}deg)">`;
+  }
+  return `<div class="pote"><div class="moedas">${h}</div><img class="vidro" src="jarro.webp" alt="Jarro do jackpot"></div>`;
+}
 function renderCassino(d, offline, recebeu, linha) {
   const top = Array.isArray(d.top) ? d.top : [];
   const hall = Array.isArray(d.hall) ? d.hall : [];
@@ -389,10 +408,13 @@ function renderCassino(d, offline, recebeu, linha) {
       <div class="big">${lider ? esc(lider.nome) : 'Ninguém no lucro ainda'}</div>
       <div class="who">${lider ? '+' + fmtN(lider.liquido) + ' ' + moeda + ' no mês' : 'Digite !cassino no chat da live'}</div>
     </div>`;
-  if (d.jarro !== undefined) t += `<div class="card">
-      <div class="lbl">JARRO DO JACKPOT</div>
-      <div class="big jar">${fmtN(d.jarro)}<span class="moeda">${moeda}</span></div>
-      <div class="who">Quem tirar 7-7-7 leva o jarro inteiro</div>
+  if (d.jarro !== undefined) t += `<div class="card potecard">
+      ${pote(d.jarro, d.jarroCheio)}
+      <div class="potetxt">
+        <div class="lbl">JARRO DO JACKPOT</div>
+        <div class="big jar">${fmtN(d.jarro)}<span class="moeda">${moeda}</span></div>
+        <div class="who">Quem tirar 7-7-7 leva o jarro inteiro</div>
+      </div>
     </div>`;
   const ant = d.anterior && Array.isArray(d.anterior.top) ? d.anterior.top : [];
   if (ant.length) t += `<div class="card">
