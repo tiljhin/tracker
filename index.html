@@ -29,13 +29,14 @@ header { position: relative; text-align: center; margin-bottom: 22px; }
 .logo { font-family: var(--rot); font-size: 38px; letter-spacing: 3px; text-transform: uppercase; color: var(--cl); text-shadow: 0 0 18px color-mix(in srgb, var(--cor) 45%, transparent); transition: color .4s; }
 .sub { color: var(--mut); font-size: 15px; margin-top: 2px; }
 
-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
 nav button {
   background: var(--card); border: 1px solid var(--line); color: var(--mut);
   font: 700 16px 'Montserrat', sans-serif; letter-spacing: 1px;
   padding: 12px 6px; border-radius: 10px; cursor: pointer; transition: all .2s;
 }
 nav button:hover { color: var(--txt); }
+@media (max-width: 560px) { nav { gap: 5px; } nav button { font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
 nav button.on { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 22%, var(--card)); }
 nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
 
@@ -61,6 +62,13 @@ ol li.sepl { display: block; padding: 12px 0 4px; font-size: 11px; font-weight: 
 ol li.risc { opacity: .5; }
 ol li.risc .n { color: var(--mut); }
 .vazio { color: var(--mut); text-align: center; padding: 10px 0; }
+
+/* cassino: valores à direita, pódio e jarro */
+.val { margin-left: auto; font-family: var(--rot); font-size: 17px; font-weight: 700; color: var(--cl); font-variant-numeric: tabular-nums; }
+.n.pod { border: 1px solid var(--cor); }
+.n.ouro { background: var(--cor); border-color: var(--cor); color: #0B0604; }
+.big .moeda { font: 700 13px 'Montserrat', sans-serif; letter-spacing: 1px; color: var(--mut); }
+.jar { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
 
 .como { font-size: 15px; line-height: 1.5; color: var(--mut); }
 .como b { color: var(--txt); }
@@ -143,6 +151,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
     <button data-aba="over" data-nome="OVER">OVER</button>
     <button data-aba="flix" data-nome="BIGOFLIX">BIGOFLIX</button>
     <button data-aba="roleta" data-nome="ROLETA">ROLETA</button>
+    <button data-aba="cassino" data-nome="CASSINO">CASSINO</button>
   </nav>
 
   <div class="status">
@@ -162,7 +171,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
     <ol id="feitos"></ol>
   </div>
 
-  <div class="card">
+  <div class="card" id="calCard">
     <div class="lbl">HISTÓRICO<small id="calTot"></small></div>
     <div class="cal">
       <div>
@@ -181,7 +190,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
   </div>
 
   <div class="card" id="comoCard">
-    <div class="lbl">COMO PEDIR</div>
+    <div class="lbl" id="comoLbl">COMO PEDIR</div>
     <div class="como" id="como"></div>
     <a class="btn" id="btnPix" target="_blank" rel="noopener">PEDIR PELO LIVEPIX</a>
   </div>
@@ -222,7 +231,9 @@ const ABAS = {
           como: 'Mande um Pix pelo LivePix com o <b>nome do herói</b> na mensagem.<br><b>R$ 1</b> escolhe o herói da próxima partida.' },
   flix: { agora: 'FILME DA SEMANA', vazio: 'Nenhum pedido de filme ainda.',
           como: 'Mande um Pix de <b>R$ 15</b> pelo LivePix com a palavra <b>filme</b> e o nome do filme na mensagem.' },
-  roleta: { agora: 'GIRANDO AGORA', vazio: 'Nenhum giro na fila.', outro: '', como: '' }
+  roleta: { agora: 'GIRANDO AGORA', vazio: 'Nenhum giro na fila.', outro: '', como: '' },
+  cassino: { agora: '', vazio: 'Ninguém no lucro este mês ainda. Seja o primeiro!', outro: '',
+          como: 'Digite <b>!cassino</b> no chat da live (ou <b>!cassino 100</b> / <b>!cassino tudo</b>) e aposte seus <b>BIGOCOINS</b>.<br>O ranking é o saldo do mês (prêmios menos apostas) e zera todo mês. Só o <b>7 com bigode</b> leva o jarro.' }
 };
 // etiqueta de cada origem (igual ao HUD)
 const TAGS = { doacao: 'PIX', sub: 'SUB', resub: 'RESUB', gift: 'GIFT', pontos: 'SUCOS' };
@@ -328,6 +339,56 @@ function renderRoleta(d, offline, recebeu, linha) {
   $('comoCard').hidden = true;
 }
 
+// ---------- CASSINO (aba própria: líder, jarro, top do mês e hall de jackpots) ----------
+const fmtN = v => Number(v || 0).toLocaleString('pt-BR');
+const plural = (n, um, varios) => `${fmtN(n)} ${n === 1 ? um : varios}`;
+
+function renderCassino(d, offline, recebeu, linha) {
+  const top = Array.isArray(d.top) ? d.top : [];
+  const hall = Array.isArray(d.hall) ? d.hall : [];
+  const moeda = esc(d.moeda || 'BIGOCOINS');
+  const mes = esc(d.mesNome || '');
+
+  $('pill').textContent = offline ? 'Cassino offline' : 'Cassino aberto';
+  $('pill').className = 'pill' + (offline ? '' : ' ok');
+  $('upd').textContent = recebeu && linha.updated_at ? 'atualizado ' + haQuanto(linha.updated_at) : '';
+
+  // topo: líder do mês, jarro e pódio do mês passado
+  const lider = top[0];
+  let t = `<div class="card">
+      <div class="lbl">LÍDER${mes ? ' DE ' + mes : ' DO MÊS'}</div>
+      <div class="big">${lider ? esc(lider.nome) : 'Ninguém no lucro ainda'}</div>
+      <div class="who">${lider ? '+' + fmtN(lider.liquido) + ' ' + moeda + ' no mês' : 'Digite !cassino no chat da live'}</div>
+    </div>`;
+  if (d.jarro !== undefined) t += `<div class="card">
+      <div class="lbl">JARRO DO JACKPOT</div>
+      <div class="big jar">${fmtN(d.jarro)}<span class="moeda">${moeda}</span></div>
+      <div class="who">Quem tirar 7-7-7 leva o jarro inteiro</div>
+    </div>`;
+  const ant = d.anterior && Array.isArray(d.anterior.top) ? d.anterior.top : [];
+  if (ant.length) t += `<div class="card">
+      <div class="lbl">PÓDIO DE ${esc((MESES[Number(String(d.anterior.mes).slice(5, 7)) - 1] || '').toUpperCase())}</div>
+      <ol>${ant.map((p, k) => `<li><span class="n${k === 0 ? ' ouro' : ' pod'}">${k + 1}</span><div class="nm">${esc(p.nome)}</div><b class="val">+${fmtN(p.liquido)}</b></li>`).join('')}</ol>
+    </div>`;
+  $('topo').innerHTML = t;
+
+  // top do mês
+  $('filaLbl').innerHTML = `TOP DO MÊS${mes ? ' · ' + mes : ''}<small>${recebeu ? '· ' + plural(d.giros, 'giro', 'giros') : ''}</small>`;
+  $('lista').innerHTML = top.length
+    ? top.map((p, k) => `<li><span class="n${k === 0 ? ' ouro' : (k < 3 ? ' pod' : '')}">${k + 1}</span><div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b></li>`).join('')
+    : `<li><div class="vazio" style="width:100%">${ABAS.cassino.vazio}</div></li>`;
+
+  // hall dos jackpots (não zera na virada do mês)
+  $('feitosLbl').textContent = 'HALL DOS JACKPOTS';
+  $('feitosCard').hidden = !hall.length;
+  $('feitos').innerHTML = hall.map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}${x.a ? ' · aposta de ' + fmtN(x.a) : ''}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('');
+
+  $('como').innerHTML = ABAS.cassino.como;
+  $('comoLbl').textContent = 'COMO JOGAR';
+  $('comoCard').hidden = false;
+  $('btnPix').hidden = true;
+}
+
 /* ---------- CALENDÁRIO (histórico de feitos, por dia) ---------- */
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const hojeD = new Date();
@@ -430,6 +491,7 @@ async function buscar() {
 
 function render() {
   if (!aba) return;
+  $('calCard').hidden = aba === 'cassino';
   const a = ABAS[aba], linha = dados[aba] || {}, d = linha.data || {};
   const recebeu = temDado(d);
   const offline = !recebeu || !linha.updated_at || (Date.now() - new Date(linha.updated_at)) / 60000 > OFFLINE_MIN;
@@ -437,13 +499,16 @@ function render() {
   // abas: pontinho lava no jogo que está ativo na live
   document.querySelectorAll('#tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.aba === aba);
-    const ativo = b.dataset.aba !== 'flix' && b.dataset.aba !== 'roleta' && dados[b.dataset.aba]?.data?.ativo === true;
+    const ativo = !['flix', 'roleta', 'cassino'].includes(b.dataset.aba) && dados[b.dataset.aba]?.data?.ativo === true;
     b.innerHTML = b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
   });
 
   // aba da roleta: tela própria
   if (aba === 'roleta') { renderRoleta(d, offline, recebeu, linha); renderCal(); return; }
+  if (aba === 'cassino') return renderCassino(d, offline, recebeu, linha);
+  $('comoLbl').textContent = 'COMO PEDIR';
   $('comoCard').hidden = false;
+  $('btnPix').hidden = false;
   $('feitosLbl').textContent = 'FEITOS NESTA LIVE';
 
   // status
