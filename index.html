@@ -610,7 +610,7 @@ function render() {
             <div class="big">${esc(titulo)}</div>
             <div class="who">${esc(who)}${aba === 'flix' ? '' : tags(top)}</div>
           </div>
-          ${botoes(top, true)}
+          ${botoes(top, true)}${aba === 'flix' ? '' : topoBtn()}
         </div>
       </div>`;
   } else $('topo').innerHTML = '';
@@ -666,6 +666,12 @@ async function enviar(txt) {
   return ok;
 }
 
+// ✎ editar o pedido que está no AGORA (comando !editar atual …)
+function topoBtn() {
+  if (!ADMIN || !senha) return '';
+  return `<div class="adm2"><button data-edit="atual" title="Editar o pedido do AGORA">✎</button></div>`;
+}
+
 // ✎ editar e ✕ remover em cada pedido da fila (posição = número mostrado)
 function posBtns(k) {
   if (!ADMIN || !senha) return '';
@@ -697,7 +703,7 @@ document.addEventListener('click', async e => {
   let cmd = b.dataset.cmd;
   if (b.dataset.conf && !confirm(b.dataset.conf)) return;
   if (b.dataset.edit) {
-    const t = (prompt('Novo texto do pedido ' + b.dataset.edit + ':') || '').trim();
+    const t = (prompt(b.dataset.edit === 'atual' ? 'Novo texto do pedido do AGORA:' : 'Novo texto do pedido ' + b.dataset.edit + ':') || '').trim();
     if (!t) return;
     cmd = '!editar ' + b.dataset.edit + ' ' + t;
   } else if (b.id === 'pnAdd') {
