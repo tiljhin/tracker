@@ -200,6 +200,7 @@ footer { position: relative; z-index: 1; }
   <nav id="tabs">
     <button data-aba="dbd" data-nome="DBD">DBD</button>
     <button data-aba="over" data-nome="OVER">OVER</button>
+    <button data-aba="deadlock" data-nome="DEADLOCK">DEADLOCK</button>
     <button data-aba="flix" data-nome="BIGOFLIX">BIGOFLIX</button>
     <button data-aba="roleta" data-nome="ROLETA">ROLETA</button>
     <button data-aba="cassino" data-nome="CASSINO">CASSINO</button>
@@ -278,12 +279,15 @@ const ADMIN_SEG     = 2;    // no modo admin, busca mais rápido
 const CAL_SEG       = 60;   // de quanto em quanto tempo o calendário se atualiza
 const OFFLINE_MIN   = 30;   // sem atualização há X min = "live offline"
 
+const NOMES = { dbd: 'DBD', over: 'Overwatch', deadlock: 'Deadlock' };
 const EMB = { dbd: 'emb-dbd.webp', over: 'emb-over.webp' };
 const ABAS = {
   dbd:  {  agora: 'KILLER AGORA', vazio: 'Nenhum killer na fila. Seja o primeiro!', outro: 'Overwatch',
           como: 'Mande um Pix pelo LivePix com o <b>nome do killer</b> na mensagem.<br><b>R$ 1</b> escolhe o killer · <b>R$ 2</b> escolhe com build (escreva "build").' },
   over: { agora: 'HERÓI AGORA',  vazio: 'Nenhum herói na fila. Seja o primeiro!', outro: 'DBD',
           como: 'Mande um Pix pelo LivePix com o <b>nome do herói</b> na mensagem.<br><b>R$ 1</b> escolhe o herói da próxima partida.' },
+  deadlock: { agora: 'HERÓI AGORA', vazio: 'Nenhum herói na fila. Seja o primeiro!', outro: 'outro jogo',
+          como: 'Mande um Pix pelo LivePix com o <b>nome do herói do Deadlock</b> na mensagem.<br><b>R$ 1</b> escolhe o herói da próxima partida.' },
   flix: { agora: 'FILME DA SEMANA', vazio: 'Nenhum pedido de filme ainda.',
           como: 'Mande um Pix de <b>R$ 15</b> pelo LivePix com a palavra <b>filme</b> e o nome do filme na mensagem.' },
   roleta: { agora: 'GIRANDO AGORA', vazio: 'Nenhum giro na fila.', outro: '', como: '' },
@@ -547,7 +551,7 @@ async function buscar() {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker?select=id,data,updated_at`, { headers: { apikey: SUPABASE_KEY } });
     if (!r.ok) throw new Error(r.status);
     dados = Object.fromEntries((await r.json()).map(l => [l.id, l]));
-    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : (dados.over?.data?.ativo === true ? 'over' : 'dbd');
+    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : (['over', 'deadlock'].find(k => dados[k]?.data?.ativo === true) || 'dbd');
     // o HUD já aplicou o clique (a aba foi atualizada depois dele): libera o botão
     const upd = new Date(dados[aba]?.updated_at || 0).getTime();
     Object.keys(pend).forEach(id => { if (upd > pend[id] || Date.now() - pend[id] > 15000) delete pend[id]; });
@@ -589,7 +593,7 @@ function render() {
   let txt = 'Live offline', ok = false;
   if (!offline) {
     if (aba === 'flix') { txt = 'Pedidos abertos'; ok = true; }
-    else if (d.ativo !== true) txt = `Fila pausada · live em ${a.outro}`;
+    else if (d.ativo !== true) txt = `Fila pausada · live em ${NOMES[['dbd', 'over', 'deadlock'].find(k => dados[k]?.data?.ativo === true)] || a.outro}`;
     else if (d.aberta === false) txt = 'Fila fechada';
     else { txt = 'Fila aberta'; ok = true; }
   }
@@ -681,7 +685,7 @@ function posBtns(k) {
 
 function painel() {
   const el = $('painel');
-  const jogo = aba === 'dbd' || aba === 'over';
+  const jogo = aba === 'dbd' || aba === 'over' || aba === 'deadlock';
   if (!ADMIN || !senha || !(jogo || aba === 'flix')) { el.innerHTML = ''; pnKey = ''; return; }
   const aberta = (dados[aba]?.data || {}).aberta !== false;
   const key = aba + aberta;
@@ -690,7 +694,7 @@ function painel() {
   const b = (txt, cmd, pri) => `<button data-cmd="${esc(cmd)}"${pri ? ' class="pri"' : ''}>${txt}</button>`;
   el.innerHTML = '<div class="card pnl"><div class="lbl">PAINEL ADMIN<small id="pnMsg"></small></div>' + (jogo ? `
     <div class="pnrow">${b('PRÓXIMO', '!prox', 1)}${b('PULAR', '!pular')}${b(aberta ? 'FECHAR FILA' : 'ABRIR FILA', aberta ? '!fila fechar' : '!fila abrir')}${b('ESCONDER HUD', '!fila esconder')}${b('MOSTRAR HUD', '!fila mostrar')}</div>
-    <div class="pnrow">${b('LIVE: DBD', '!ctadbd')}${b('LIVE: OVERWATCH', '!ctaover')}<button data-cmd="!limparfila" data-conf="Zerar a fila, o AGORA, os feitos e os recusados da live?">LIMPAR FILA</button></div>
+    <div class="pnrow">${b('LIVE: DBD', '!ctadbd')}${b('LIVE: OVERWATCH', '!ctaover')}${b('LIVE: DEADLOCK', '!ctadeadlock')}<button data-cmd="!limparfila" data-conf="Zerar a fila, o AGORA, os feitos e os recusados da live?">LIMPAR FILA</button></div>
     <div class="pnrow"><input id="pnUser" placeholder="@usuário"><input id="pnPick" placeholder="${aba === 'dbd' ? 'killer' : 'herói'}"><label><input type="checkbox" id="pnBuild"> build</label><button class="pri" id="pnAdd">ADICIONAR</button></div>` : `
     <div class="pnrow"><input id="pnFilme" placeholder="filme da semana"><input id="pnOnde" placeholder="onde (Prime Video…)"><button class="pri" id="pnSetFilme">DEFINIR FILME</button>${b('TIRAR FILME', '!filme off')}</div>
     <div class="pnrow"><input id="pnUser" placeholder="@usuário"><input id="pnTit" placeholder="filme pedido"><button class="pri" id="pnAdd">ADICIONAR PEDIDO</button><button data-cmd="!limparfilmes" data-conf="Zerar a fila de filmes, os feitos e os recusados?">LIMPAR FILMES</button></div>`) + '</div>';
