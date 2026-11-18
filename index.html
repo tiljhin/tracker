@@ -187,14 +187,27 @@ footer { position: relative; z-index: 1; }
 .pnl input:focus { outline: none; border-color: var(--cor); }
 .pnl label { display: flex; align-items: center; gap: 6px; color: var(--mut); font-size: 14px; }
 .pnl .lbl small { margin-left: auto; text-transform: none; letter-spacing: 0; }
+
+/* ---- temas sazonais (18/11/2026): coroa no topo + selo + efeito de fundo ---- */
+.enfeite { display: block; position: relative; z-index: 2; width: min(640px, 100%); height: auto; margin: 0 auto -28px; pointer-events: none; user-select: none; }
+.selo { position: absolute; z-index: 3; right: 1%; top: 46%; width: 76px; height: auto; transform: rotate(8deg); filter: drop-shadow(0 4px 10px rgba(0,0,0,.6)); pointer-events: none; user-select: none; }
+/* celular: o selo ganha uma faixinha própria embaixo da frase (só nos temas sazonais), senão cobria o texto */
+@media (max-width: 560px) { .enfeite { margin-bottom: -18px; } .sazonal header { margin-bottom: 46px; } .selo { top: auto; bottom: -42px; right: 6px; width: 32px; } }
+.adm-badge { z-index: 4; }
+.tema-sel { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.tema-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tema-btns button.on { background: var(--cor); border-color: var(--cor); color: #0B0604; }
 </style>
 <link rel="icon" href="icone.png">
 </head>
 <body>
 <div class="wrap">
   <header>
+    <!-- temas sazonais: coroa e selo só aparecem em Natal / Aniversário / Réveillon (na Forja ficam escondidos e nem carregam) -->
+    <img id="enfeite" class="enfeite" width="1000" height="212" alt="" aria-hidden="true" hidden>
     <img class="logo" src="logo.webp" width="900" height="256" alt="TIL JHIN">
     <div class="sub">Acompanhe a fila da live · Bigodinhos</div>
+    <img id="selo" class="selo" width="160" height="165" alt="" aria-hidden="true" hidden>
     <!-- modo admin: selo (só aparece com ?admin no link) -->
     <button id="admBadge" class="adm-badge" hidden></button>
   </header>
@@ -261,6 +274,16 @@ footer { position: relative; z-index: 1; }
     <div class="lbl">MODO ADMIN</div>
     <div id="admLogin">
       <input id="admSenha" type="password" placeholder="senha do tracker" autocomplete="current-password">
+    </div>
+    <div class="tema-sel">
+      <div class="lbl">TEMA DO SITE<small id="temaInfo"></small></div>
+      <div class="tema-btns" id="admTema">
+        <button type="button" data-tema="auto">AUTOMÁTICO</button>
+        <button type="button" data-tema="forja">FORJA</button>
+        <button type="button" data-tema="natal">NATAL</button>
+        <button type="button" data-tema="aniversario">ANIVERSÁRIO</button>
+        <button type="button" data-tema="reveillon">RÉVEILLON</button>
+      </div>
     </div>
     <div class="dlg-msg" id="admMsg"></div>
     <div class="dlg-btns">
@@ -734,7 +757,7 @@ function admUI() {
   const b = $('admBadge');
   b.hidden = false;
   b.className = 'adm-badge' + (senha ? ' on' : '');
-  b.textContent = senha ? 'ADMIN' : '🔒 ADMIN';
+  b.textContent = (senha ? 'ADMIN' : '🔒 ADMIN') + (window.TEMA && TEMA.rotulo() ? ' · ' + TEMA.rotulo() : '');   // lembra que o tema está forçado
   b.title = senha ? 'Modo admin ativo' : 'Entrar no modo admin';
 }
 
@@ -819,26 +842,204 @@ ciclo();
 
 <canvas id="brasas" aria-hidden="true"></canvas>
 <script>
-/* brasas subindo: leve (24 faíscas), pausa com a aba escondida, some com "reduzir movimento" */
+/* TEMAS SAZONAIS (18/11/2026): o tema vem da data do visitante, igual aos widgets
+   Natal 1–25/12 · Aniversário 26/12 · Réveillon 27/12–02/01 · resto do ano: Forja.
+   Cada tema = coroa no topo + selo + efeito no canvas (brasas / neve / confete / brilhos).
+   Leve: menos partículas e 30 quadros/s no celular, pausa com a aba escondida, parado com "reduzir movimento". */
 (() => {
-  const c = document.getElementById('brasas'); if (!c || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const x = c.getContext('2d'); let W, H, P = [];
-  const nova = (ini) => ({ x: Math.random() * W, y: ini ? Math.random() * H : H + 10, r: .6 + Math.random() * 1.8,
-    v: 14 + Math.random() * 30, d: (Math.random() - .5) * 14, f: Math.random() * 6, a: .25 + Math.random() * .55 });
-  const ajusta = () => { const k = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; c.width = W * k; c.height = H * k; x.setTransform(k, 0, 0, k, 0, 0); };
-  ajusta(); addEventListener('resize', ajusta); P = Array.from({ length: 24 }, () => nova(true));
-  let t0 = performance.now();
-  (function quadro(t) {
-    const dt = Math.min((t - t0) / 1000, .05); t0 = t; x.clearRect(0, 0, W, H);
-    if (!document.hidden) for (const p of P) {
-      p.y -= p.v * dt; p.x += (p.d + Math.sin(t / 900 + p.f) * 10) * dt;
-      if (p.y < -10) Object.assign(p, nova(false));
-      const vida = Math.min(1, p.y / (H * .85)), al = p.a * vida * (.7 + .3 * Math.sin(t / 200 + p.f));
-      x.beginPath(); x.fillStyle = `rgba(${227},${80 + Math.round(90 * (1 - vida))},42,${al})`;
-      x.shadowColor = '#E3502A'; x.shadowBlur = 8; x.arc(p.x, p.y, p.r, 0, 6.283); x.fill();
+  const $t = id => document.getElementById(id);
+  const html = document.documentElement, c = $t('brasas'), x = c.getContext('2d');
+  const ARTE = 'temas/', R = Math.random;
+  const ROTULO = { forja: 'FORJA', natal: 'NATAL', aniversario: 'ANIVERSÁRIO', reveillon: 'RÉVEILLON' };
+  const RM = matchMedia('(prefers-reduced-motion: reduce)');
+  const ADM = new URLSearchParams(location.search).has('admin');
+
+  /* ---------- qual tema ---------- */
+  // o interruptor do modo admin só vale com ?admin: o público sempre vê o tema da data
+  let ov = ''; try { ov = localStorage.getItem('trkTema') || ''; } catch (e) {}
+  if (!ROTULO[ov]) ov = '';
+  function auto() {
+    const d = new Date(), m = d.getMonth() + 1, n = d.getDate();
+    if (m === 12 && n <= 25) return 'natal';
+    if (m === 12 && n === 26) return 'aniversario';
+    if ((m === 12 && n > 26) || (m === 1 && n <= 2)) return 'reveillon';
+    return 'forja';
+  }
+  const escolhido = () => (ADM && ov) || auto();
+  window.TEMA = { rotulo: () => (ov ? ROTULO[ov] : '') };
+
+  /* ---------- canvas ---------- */
+  let W, H, K, col = { l: 0, r: 0 }, quadro = null, raf = 0, tUlt = 0, rt = 0;
+  const leve = () => innerWidth < 600;                       // celular: menos partículas
+  const N = n => (leve() ? Math.round(n * .6) : n);
+  function ajusta() {
+    K = Math.min(devicePixelRatio || 1, leve() ? 1.5 : 2);
+    W = innerWidth; H = innerHeight; c.width = W * K; c.height = H * K; x.setTransform(K, 0, 0, K, 0, 0);
+    const w = document.querySelector('.wrap').getBoundingClientRect(); col = { l: w.left + 16, r: w.right - 16 };   // coluna da página
+  }
+  ajusta();
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(ajusta, 150); });   // no celular a barra do navegador dispara resize ao rolar
+
+  // 1 nas bordas da tela, "min" no miolo da coluna da fila (transição de 60 px): o efeito não atrapalha a leitura
+  const fa = (px, min) => {
+    const d = Math.min(px - col.l, col.r - px);
+    if (d <= 0) return 1;
+    const s = Math.min(1, d / 60);
+    return 1 - (1 - min) * s * s * (3 - 2 * s);
+  };
+  // bolinha macia pré-desenhada (desenhar a imagem custa bem menos que gradiente ou sombra a cada quadro)
+  const sprite = (rgb, nucleo = .4) => {                     // nucleo: até onde a bolinha é sólida (maior = mais nítida)
+    const s = document.createElement('canvas'); s.width = s.height = 32;
+    const g = s.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    r.addColorStop(0, `rgba(${rgb},1)`); r.addColorStop(nucleo, `rgba(${rgb},.9)`); r.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = r; g.fillRect(0, 0, 32, 32); return s;
+  };
+  const cristal = rgb => {                                   // floco de 6 pontas (o mesmo tipo que aparece na guirlanda do Natal)
+    const s = document.createElement('canvas'); s.width = s.height = 32;
+    const g = s.getContext('2d'); g.translate(16, 16); g.strokeStyle = `rgb(${rgb})`; g.lineWidth = 2.4; g.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { g.rotate(Math.PI / 3); g.beginPath(); g.moveTo(0, -13); g.lineTo(0, 13); g.stroke(); }
+    return s;
+  };
+  // cores da paleta: ouro, creme, lava e "prata" (o cinza quente do texto secundário)
+  const OURO = '227,160,89', CREME = '251,212,145', LAVA = '227,80,42', PRATA = '184,165,152';
+
+  const FX = {
+    // FORJA: as brasas de sempre (24 faíscas)
+    forja() {
+      const nova = ini => ({ x: R() * W, y: ini ? R() * H : H + 10, r: .6 + R() * 1.8, v: 14 + R() * 30, d: (R() - .5) * 14, f: R() * 6, a: .25 + R() * .55 });
+      const P = Array.from({ length: 24 }, () => nova(true));
+      return (dt, t) => {
+        for (const p of P) {
+          p.y -= p.v * dt; p.x += (p.d + Math.sin(t / 900 + p.f) * 10) * dt;
+          if (p.y < -10) Object.assign(p, nova(false));
+          const vida = Math.min(1, p.y / (H * .85)), al = p.a * vida * (.7 + .3 * Math.sin(t / 200 + p.f));
+          x.beginPath(); x.fillStyle = `rgba(${227},${80 + Math.round(90 * (1 - vida))},42,${al})`;
+          x.shadowColor = '#E3502A'; x.shadowBlur = 8; x.arc(p.x, p.y, p.r, 0, 6.283); x.fill();
+        }
+      };
+    },
+
+    // NATAL: neve caindo devagar, balançando; mais fraca sobre a coluna da fila
+    natal() {
+      const bola = sprite(CREME, .62), flor = cristal(CREME);   // os flocos mais próximos viram cristal; o resto, bolinha nítida
+      const nova = ini => { const z = R(); return { x: R() * W, y: ini ? R() * H : -12, r: 1.2 + z * 2.6, v: 18 + z * 38, A: 8 + R() * 16, w: .5 + R() * .9, f: R() * 6.283, a: .5 + z * .5, cr: z > .72 }; };
+      const P = Array.from({ length: N(44) }, () => nova(true));
+      return (dt, t) => {
+        for (const p of P) {
+          p.y += p.v * dt;
+          if (p.y > H + 12) Object.assign(p, nova(false));
+          const px = p.x + Math.sin(t / 1000 * p.w + p.f) * p.A, s = p.cr ? p.r * 4.2 : p.r * 2.6;
+          x.globalAlpha = p.a * fa(px, .28);
+          x.drawImage(p.cr ? flor : bola, px - s / 2, p.y - s / 2, s, s);
+        }
+        x.globalAlpha = 1;
+      };
+    },
+
+    // ANIVERSÁRIO: confete dourado e vermelho girando + fagulhas douradas subindo
+    aniversario() {
+      const spr = sprite(OURO), cores = [OURO, OURO, LAVA, CREME];
+      const conf = ini => ({ x: R() * W, y: ini ? R() * H : -14, w: 4 + R() * 3, h: 7 + R() * 5, v: 38 + R() * 50, A: 10 + R() * 18, sw: .6 + R() * 1.1, f: R() * 6.283, giro: (R() - .5) * 5, fv: 3 + R() * 4, c: cores[(R() * 4) | 0], a: .55 + R() * .4 });
+      const fag = ini => ({ x: R() * W, y: ini ? R() * H : H + 10, r: .8 + R() * 1.4, v: 24 + R() * 40, d: (R() - .5) * 16, f: R() * 6.283, a: .4 + R() * .5 });
+      const C = Array.from({ length: N(26) }, () => conf(true)), F = Array.from({ length: N(10) }, () => fag(true));
+      return (dt, t) => {
+        const s = t / 1000;
+        for (const p of C) {
+          p.y += p.v * dt;
+          if (p.y > H + 14) Object.assign(p, conf(false));
+          const px = p.x + Math.sin(s * p.sw + p.f) * p.A;
+          x.save(); x.translate(px, p.y); x.rotate(p.f + s * p.giro); x.scale(1, Math.cos(s * p.fv + p.f));
+          x.globalAlpha = p.a * fa(px, .4); x.fillStyle = `rgb(${p.c})`; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
+        }
+        for (const p of F) {
+          p.y -= p.v * dt; p.x += (p.d + Math.sin(s * 1.1 + p.f) * 10) * dt;
+          if (p.y < -10) Object.assign(p, fag(false));
+          x.globalAlpha = p.a * fa(p.x, .4) * (.6 + .4 * Math.sin(s * 5 + p.f));
+          x.drawImage(spr, p.x - p.r * 3, p.y - p.r * 3, p.r * 6, p.r * 6);
+        }
+        x.globalAlpha = 1;
+      };
+    },
+
+    // RÉVEILLON: brilhos dourados e prateados que estouram em pontos aleatórios da tela
+    reveillon() {
+      const cores = [OURO, CREME, PRATA, PRATA], spr = {};
+      cores.forEach(k => { spr[k] = spr[k] || sprite(k); });
+      let P = [], prox = .3;
+      const estoura = (bx, by) => {
+        const n = leve() ? 8 : 12;
+        for (let i = 0; i < n; i++) {
+          const ang = i / n * 6.283 + R() * .4, v = 55 + R() * 90;
+          P.push({ x: bx, y: by, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, u: 0, dur: 1 + R() * .9, r: 1.5 + R() * 1.6, c: cores[(R() * 4) | 0] });
+        }
+        P.push({ x: bx, y: by, vx: 0, vy: 0, u: 0, dur: .8, r: 9 + R() * 5, c: cores[(R() * 2) | 0], estrela: true });   // clarão em estrela no centro
+      };
+      return dt => {
+        prox -= dt;
+        if (prox <= 0 && P.length < 70) {
+          // no desktop a maioria estoura nas laterais (onde não atrapalha a fila); no celular, em qualquer ponto
+          const lado = col.l > 120 && R() < .75, bx = lado ? (R() < .5 ? R() * (col.l - 24) : col.r + 24 + R() * (W - col.r - 24)) : R() * W;
+          estoura(bx, H * (.06 + R() * .72)); prox = (leve() ? 1.1 : .6) + R() * 1.1;
+        }
+        for (let i = P.length - 1; i >= 0; i--) {
+          const p = P[i]; p.u += dt;
+          if (p.u >= p.dur) { P.splice(i, 1); continue; }
+          const k = p.u / p.dur, al = Math.pow(1 - k, 1.5) * fa(p.x, .4);
+          p.vx *= 1 - 1.8 * dt; p.vy = p.vy * (1 - 1.8 * dt) + 40 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+          x.globalAlpha = al;
+          if (p.estrela) {
+            const s = p.r * (1 + k * 1.6);
+            x.fillStyle = `rgb(${p.c})`; x.beginPath(); x.moveTo(p.x, p.y - s);
+            x.quadraticCurveTo(p.x, p.y, p.x + s, p.y); x.quadraticCurveTo(p.x, p.y, p.x, p.y + s);
+            x.quadraticCurveTo(p.x, p.y, p.x - s, p.y); x.quadraticCurveTo(p.x, p.y, p.x, p.y - s); x.fill();
+          } else x.drawImage(spr[p.c], p.x - p.r * 2.5, p.y - p.r * 2.5, p.r * 5, p.r * 5);
+        }
+        x.globalAlpha = 1;
+      };
     }
-    requestAnimationFrame(quadro);
-  })(t0);
+  };
+
+  /* ---------- laço de animação ---------- */
+  function loop(t) {
+    raf = requestAnimationFrame(loop);
+    const dt = (t - tUlt) / 1000;
+    if (leve() && dt < .032) return;                           // celular: 30 quadros/s bastam
+    tUlt = t; x.clearRect(0, 0, W, H); quadro(Math.min(dt, .05), t);
+  }
+  function liga() { if (raf || !quadro || RM.matches || document.hidden) return; tUlt = performance.now(); raf = requestAnimationFrame(loop); }
+  function para() { cancelAnimationFrame(raf); raf = 0; }
+  document.addEventListener('visibilitychange', () => (document.hidden ? para() : (aplicar(), liga())));
+  if (RM.addEventListener) RM.addEventListener('change', () => { if (RM.matches) { para(); x.clearRect(0, 0, W, H); } else liga(); });
+
+  /* ---------- aplica o tema: coroa + selo + efeito ---------- */
+  function marcar() {
+    document.querySelectorAll('#admTema button').forEach(b => b.classList.toggle('on', b.dataset.tema === (ov || 'auto')));
+    $t('temaInfo').textContent = 'automático hoje: ' + ROTULO[auto()];
+    if (window.admUI) admUI();
+  }
+  function aplicar() {
+    const t = escolhido();
+    marcar();
+    if (t === html.dataset.tema) return;
+    html.dataset.tema = t; html.classList.toggle('sazonal', t !== 'forja');
+    const en = $t('enfeite'), se = $t('selo');
+    if (t === 'forja') { en.hidden = se.hidden = true; en.removeAttribute('src'); se.removeAttribute('src'); }
+    else { en.hidden = se.hidden = false; en.src = ARTE + t + '-enfeite.webp'; se.src = ARTE + t + '-selo.webp'; }
+    para(); x.shadowBlur = 0; x.globalAlpha = 1; x.clearRect(0, 0, W, H);
+    quadro = FX[t](); liga();
+  }
+  $t('enfeite').onerror = $t('selo').onerror = function () { this.hidden = true; };   // sem a arte, some em vez de mostrar imagem quebrada
+
+  // interruptor do modo admin (no popup do selo ADMIN): Automático / Forja / Natal / Aniversário / Réveillon
+  $t('admTema').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    ov = b.dataset.tema === 'auto' ? '' : b.dataset.tema;
+    try { if (ov) localStorage.setItem('trkTema', ov); else localStorage.removeItem('trkTema'); } catch (err) {}
+    aplicar(); $t('admDlg').close();
+  });
+
+  aplicar();
+  setInterval(aplicar, 300000);                                // aba aberta na virada do dia troca sozinha
 })();
 </script>
 </body>
