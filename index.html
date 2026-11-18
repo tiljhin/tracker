@@ -45,6 +45,7 @@ nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: 
 .jogologo[hidden] { display: none; }
 @media (max-width: 560px) { .jogologo { position: static; transform: none; order: 2; width: 100%; text-align: center; } .status { flex-wrap: wrap; } }
 .jogologo img { height: 36px; max-width: 86%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(227,80,42,.35)); opacity: .95; }
+.jogologo img.deadlock { height: 50px; }   /* a logo do Deadlock é empilhada (olho em cima, nome embaixo): precisa de mais altura pra ficar legível */
 nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
 
 .status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--mut); }
@@ -577,9 +578,9 @@ function render() {
     b.innerHTML = (EMB[b.dataset.aba] ? `<img class="emb" src="${EMB[b.dataset.aba]}" alt="">` : '') + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
   });
 
-  // logo do jogo (creme) acima da fila, só nas abas DBD e OVER
-  const lg = $('jogoLogo'), src = { dbd: 'logo-dbd.webp', over: 'logo-over.webp' }[aba];
-  lg.hidden = !src; if (src) lg.innerHTML = `<img src="${src}" alt="${aba === 'dbd' ? 'Dead by Daylight' : 'Overwatch'}">`;
+  // logo do jogo (creme) acima da fila, só nas abas DBD, OVER e DEADLOCK
+  const lg = $('jogoLogo'), src = { dbd: 'logo-dbd.webp', over: 'logo-over.webp', deadlock: 'logo-deadlock.webp' }[aba];
+  lg.hidden = !src; if (src) lg.innerHTML = `<img class="${aba}" src="${src}" alt="${({ dbd: 'Dead by Daylight', over: 'Overwatch', deadlock: 'Deadlock' })[aba]}">`;
 
   // aba da roleta: tela própria
   if (aba === 'roleta') { renderRoleta(d, offline, recebeu, linha); renderCal(); return; }
