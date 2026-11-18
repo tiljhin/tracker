@@ -171,7 +171,7 @@ body::after { /* lava lá embaixo + vinheta */
 nav button.on { box-shadow: 0 0 18px color-mix(in srgb, var(--cor) 38%, transparent), inset 0 0 12px color-mix(in srgb, var(--cor) 18%, transparent); }
 nav button { backdrop-filter: blur(2px); }
 footer { position: relative; z-index: 1; }
-@media (prefers-reduced-motion: reduce) { .logo { animation: none; } #brasas { display: none; } }
+@media (prefers-reduced-motion: reduce) { .logo { animation: none; } }
 
 .potecard { display: flex; align-items: center; gap: 18px; }
 .pote { position: relative; flex: 0 0 132px; aspect-ratio: 300 / 340; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
@@ -869,9 +869,11 @@ ciclo();
   window.TEMA = { rotulo: () => (ov ? ROTULO[ov] : '') };
 
   /* ---------- canvas ---------- */
-  let W, H, K, col = { l: 0, r: 0 }, quadro = null, raf = 0, tUlt = 0, rt = 0;
+  let W, H, K, col = { l: 0, r: 0 }, quadro = null, raf = 0, tUlt = 0, rt = 0, tv = 0;
   const leve = () => innerWidth < 600;                       // celular: menos partículas
-  const N = n => (leve() ? Math.round(n * .6) : n);
+  // "reduzir movimento": em vez de desligar, versão calma (metade das partículas, 40% da velocidade)
+  const calmo = () => RM.matches;
+  const N = n => Math.round(n * (leve() ? .6 : 1) * (calmo() ? .5 : 1));
   function ajusta() {
     K = Math.min(devicePixelRatio || 1, leve() ? 1.5 : 2);
     W = innerWidth; H = innerHeight; c.width = W * K; c.height = H * K; x.setTransform(K, 0, 0, K, 0, 0);
@@ -967,7 +969,7 @@ ciclo();
       cores.forEach(k => { spr[k] = spr[k] || sprite(k); });
       let P = [], prox = .3;
       const estoura = (bx, by) => {
-        const n = leve() ? 8 : 12;
+        const n = calmo() ? 6 : leve() ? 8 : 12;
         for (let i = 0; i < n; i++) {
           const ang = i / n * 6.283 + R() * .4, v = 55 + R() * 90;
           P.push({ x: bx, y: by, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, u: 0, dur: 1 + R() * .9, r: 1.5 + R() * 1.6, c: cores[(R() * 4) | 0] });
@@ -1004,12 +1006,14 @@ ciclo();
     raf = requestAnimationFrame(loop);
     const dt = (t - tUlt) / 1000;
     if (leve() && dt < .032) return;                           // celular: 30 quadros/s bastam
-    tUlt = t; x.clearRect(0, 0, W, H); quadro(Math.min(dt, .05), t);
+    tUlt = t; x.clearRect(0, 0, W, H);
+    const d = Math.min(dt, .05) * (calmo() ? .4 : 1);          // relógio próprio: no modo calmo tudo (queda, balanço, brilho) anda mais devagar
+    tv += d * 1000; quadro(d, tv);
   }
-  function liga() { if (raf || !quadro || RM.matches || document.hidden) return; tUlt = performance.now(); raf = requestAnimationFrame(loop); }
+  function liga() { if (raf || !quadro || document.hidden) return; tUlt = performance.now(); raf = requestAnimationFrame(loop); }
   function para() { cancelAnimationFrame(raf); raf = 0; }
   document.addEventListener('visibilitychange', () => (document.hidden ? para() : (aplicar(), liga())));
-  if (RM.addEventListener) RM.addEventListener('change', () => { if (RM.matches) { para(); x.clearRect(0, 0, W, H); } else liga(); });
+  if (RM.addEventListener) RM.addEventListener('change', () => { html.dataset.tema = ''; aplicar(); });   // refaz o efeito com a quantidade certa
 
   /* ---------- aplica o tema: coroa + selo + efeito ---------- */
   function marcar() {
