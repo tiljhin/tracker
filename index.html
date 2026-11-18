@@ -922,14 +922,14 @@ ciclo();
     // NATAL: neve caindo devagar, balançando; mais fraca sobre a coluna da fila
     natal() {
       const bola = sprite(CREME, .62), flor = cristal(CREME);   // os flocos mais próximos viram cristal; o resto, bolinha nítida
-      const nova = ini => { const z = R(); return { x: R() * W, y: ini ? R() * H : -12, r: 1.2 + z * 2.6, v: 18 + z * 38, A: 8 + R() * 16, w: .5 + R() * .9, f: R() * 6.283, a: .5 + z * .5, cr: z > .72 }; };
-      const P = Array.from({ length: N(44) }, () => nova(true));
+      const nova = ini => { const z = R(); return { x: R() * W, y: ini ? R() * H : -12, r: 1.6 + z * 3.2, v: 24 + z * 44, A: 8 + R() * 18, w: .5 + R() * .9, f: R() * 6.283, a: .7 + z * .3, cr: z > .6 }; };
+      const P = Array.from({ length: N(100) }, () => nova(true));
       return (dt, t) => {
         for (const p of P) {
           p.y += p.v * dt;
           if (p.y > H + 12) Object.assign(p, nova(false));
           const px = p.x + Math.sin(t / 1000 * p.w + p.f) * p.A, s = p.cr ? p.r * 4.2 : p.r * 2.6;
-          x.globalAlpha = p.a * fa(px, .28);
+          x.globalAlpha = p.a * fa(px, .55);
           x.drawImage(p.cr ? flor : bola, px - s / 2, p.y - s / 2, s, s);
         }
         x.globalAlpha = 1;
@@ -939,9 +939,9 @@ ciclo();
     // ANIVERSÁRIO: confete dourado e vermelho girando + fagulhas douradas subindo
     aniversario() {
       const spr = sprite(OURO), cores = [OURO, OURO, LAVA, CREME];
-      const conf = ini => ({ x: R() * W, y: ini ? R() * H : -14, w: 4 + R() * 3, h: 7 + R() * 5, v: 38 + R() * 50, A: 10 + R() * 18, sw: .6 + R() * 1.1, f: R() * 6.283, giro: (R() - .5) * 5, fv: 3 + R() * 4, c: cores[(R() * 4) | 0], a: .55 + R() * .4 });
+      const conf = ini => ({ x: R() * W, y: ini ? R() * H : -14, w: 5 + R() * 4, h: 9 + R() * 6, v: 38 + R() * 50, A: 10 + R() * 18, sw: .6 + R() * 1.1, f: R() * 6.283, giro: (R() - .5) * 5, fv: 3 + R() * 4, c: cores[(R() * 4) | 0], a: .55 + R() * .4 });
       const fag = ini => ({ x: R() * W, y: ini ? R() * H : H + 10, r: .8 + R() * 1.4, v: 24 + R() * 40, d: (R() - .5) * 16, f: R() * 6.283, a: .4 + R() * .5 });
-      const C = Array.from({ length: N(26) }, () => conf(true)), F = Array.from({ length: N(10) }, () => fag(true));
+      const C = Array.from({ length: N(55) }, () => conf(true)), F = Array.from({ length: N(18) }, () => fag(true));
       return (dt, t) => {
         const s = t / 1000;
         for (const p of C) {
@@ -949,12 +949,12 @@ ciclo();
           if (p.y > H + 14) Object.assign(p, conf(false));
           const px = p.x + Math.sin(s * p.sw + p.f) * p.A;
           x.save(); x.translate(px, p.y); x.rotate(p.f + s * p.giro); x.scale(1, Math.cos(s * p.fv + p.f));
-          x.globalAlpha = p.a * fa(px, .4); x.fillStyle = `rgb(${p.c})`; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
+          x.globalAlpha = p.a * fa(px, .65); x.fillStyle = `rgb(${p.c})`; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
         }
         for (const p of F) {
           p.y -= p.v * dt; p.x += (p.d + Math.sin(s * 1.1 + p.f) * 10) * dt;
           if (p.y < -10) Object.assign(p, fag(false));
-          x.globalAlpha = p.a * fa(p.x, .4) * (.6 + .4 * Math.sin(s * 5 + p.f));
+          x.globalAlpha = p.a * fa(p.x, .65) * (.6 + .4 * Math.sin(s * 5 + p.f));
           x.drawImage(spr, p.x - p.r * 3, p.y - p.r * 3, p.r * 6, p.r * 6);
         }
         x.globalAlpha = 1;
@@ -979,12 +979,12 @@ ciclo();
         if (prox <= 0 && P.length < 70) {
           // no desktop a maioria estoura nas laterais (onde não atrapalha a fila); no celular, em qualquer ponto
           const lado = col.l > 120 && R() < .75, bx = lado ? (R() < .5 ? R() * (col.l - 24) : col.r + 24 + R() * (W - col.r - 24)) : R() * W;
-          estoura(bx, H * (.06 + R() * .72)); prox = (leve() ? 1.1 : .6) + R() * 1.1;
+          estoura(bx, H * (.06 + R() * .72)); prox = (leve() ? .8 : .4) + R() * .8;
         }
         for (let i = P.length - 1; i >= 0; i--) {
           const p = P[i]; p.u += dt;
           if (p.u >= p.dur) { P.splice(i, 1); continue; }
-          const k = p.u / p.dur, al = Math.pow(1 - k, 1.5) * fa(p.x, .4);
+          const k = p.u / p.dur, al = Math.pow(1 - k, 1.5) * fa(p.x, .65);
           p.vx *= 1 - 1.8 * dt; p.vy = p.vy * (1 - 1.8 * dt) + 40 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
           x.globalAlpha = al;
           if (p.estrela) {
