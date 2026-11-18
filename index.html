@@ -23,13 +23,14 @@ body {
   color: var(--txt); font-family: 'Montserrat', sans-serif; min-height: 100vh;
   transition: background .4s;
 }
-.wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 40px; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 28px 16px 40px; }
 
 header { position: relative; text-align: center; margin-bottom: 22px; }
 .logo { display: block; width: min(420px, 86%); height: auto; margin: 0 auto; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--cor) 40%, transparent)); transition: filter .4s; }
 .sub { color: var(--mut); font-size: 15px; margin-top: 6px; }
 
-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
+nav { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }   /* 6 abas numa linha só; em telas estreitas quebra em 3 + 3 */
+@media (max-width: 800px) { nav { grid-template-columns: repeat(3, 1fr); } }
 nav button {
   background: var(--card); border: 1px solid var(--line); color: var(--mut);
   font: 700 16px 'Montserrat', sans-serif; letter-spacing: 1px;
