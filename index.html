@@ -338,7 +338,7 @@ function mmss(s) { s = Math.max(0, Math.ceil(s)); return pad(Math.floor(s / 60))
 function renderRoleta(d, offline, recebeu, linha) {
   const fila = Array.isArray(d.fila) ? d.fila : [];
   const des = Array.isArray(d.desafios) ? d.desafios : [];
-  const jogo = d.jogo === 'over' ? 'OVERWATCH' : 'DBD';
+  const jogo = ({ over: 'OVERWATCH', deadlock: 'DEADLOCK' })[d.jogo] || 'DBD';
 
   // status
   let txt = 'Roleta offline', ok = false;
