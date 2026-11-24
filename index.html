@@ -29,17 +29,20 @@ header { position: relative; text-align: center; margin-bottom: 22px; }
 .logo { display: block; width: min(420px, 86%); height: auto; margin: 0 auto; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--cor) 40%, transparent)); transition: filter .4s; }
 .sub { color: var(--mut); font-size: 15px; margin-top: 6px; }
 
-nav { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }   /* 6 abas numa linha só; em telas estreitas quebra em 3 + 3 */
-@media (max-width: 980px) { nav { grid-template-columns: repeat(3, 1fr); } }
+nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }   /* 8 abas: GERAL + 7; quebram sozinhas em telas estreitas */
 nav button {
+  flex: 1 1 auto;
   background: var(--card); border: 1px solid var(--line); color: var(--mut);
-  font: 700 16px 'Montserrat', sans-serif; letter-spacing: 1px;
-  padding: 12px 6px; border-radius: 10px; cursor: pointer; transition: all .2s; white-space: nowrap;
+  font: 700 14px 'Montserrat', sans-serif; letter-spacing: 1px;
+  padding: 12px 12px; border-radius: 12px; cursor: pointer; transition: all .2s; white-space: nowrap;
 }
 nav button:hover { color: var(--txt); }
-@media (max-width: 560px) { nav { gap: 5px; } nav button { font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
+@media (max-width: 560px) { nav { gap: 5px; } nav button { flex: 1 1 22%; font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
+nav button .ico { display: inline-grid; place-items: center; color: var(--ouro); }
+nav button .ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav button.on .ico { color: var(--cl); }
 nav button.on { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 22%, var(--card)); }
-nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; filter: drop-shadow(0 0 4px rgba(227,80,42,.45)); }
+nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; flex: none; filter: drop-shadow(0 0 4px rgba(227,80,42,.45)); }
 @media (max-width: 560px) { nav button .emb { width: 18px; height: 18px; margin-right: 4px; } }
 .status { position: relative; min-height: 34px; }
 .jogologo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
@@ -228,6 +231,111 @@ footer { position: relative; z-index: 1; }
 .tema-sel { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 .tema-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .tema-btns button.on { background: var(--cor); border-color: var(--cor); color: #0B0604; }
+
+/* ---------- ABA GERAL (24/11/2026): painel de sistema para o público ---------- */
+.wrap.wide { max-width: 1120px; }
+#geral { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+#geral[hidden] { display: none; }
+.sc {
+  position: relative; overflow: hidden; min-width: 0; padding: 16px 18px 18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--card2) 55%, var(--card)), var(--card));
+  border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(247,197,123,.08), 0 10px 26px rgba(0,0,0,.38);
+}
+.sc::before { content: ''; position: absolute; left: 18px; right: 18px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--ouro), transparent); opacity: .5; }
+.sc::after { content: ''; position: absolute; right: -50px; bottom: -50px; width: 160px; height: 160px; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--cor) 14%, transparent), transparent 70%); }
+.sc > * { position: relative; z-index: 1; }
+.s12 { grid-column: span 12; } .s7 { grid-column: span 7; } .s6 { grid-column: span 6; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; }
+.sc-h { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+.sc-i { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: var(--ouro); background: color-mix(in srgb, var(--cor) 16%, var(--card)); border: 1px solid color-mix(in srgb, var(--cor) 32%, var(--line)); }
+.sc-i svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sc-t { font-family: var(--rot); font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--ouro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-go { margin-left: auto; flex: none; background: color-mix(in srgb, var(--card2) 80%, transparent); border: 1px solid var(--line); color: var(--mut); font: 700 10px 'Montserrat', sans-serif; letter-spacing: 1.5px; padding: 5px 10px; border-radius: 99px; cursor: pointer; transition: all .2s; }
+.sc-go:hover { color: var(--cl); border-color: var(--cor); }
+.sc-chip { margin-left: auto; flex: none; padding: 4px 10px; border-radius: 99px; font: 700 10px 'Montserrat', sans-serif; letter-spacing: 1.5px; color: var(--mut); border: 1px solid var(--line); background: var(--card2); }
+.sc-chip.ok { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 24%, var(--card)); }
+.sc ol li { padding: 9px 0; gap: 10px; }
+.sc .nm { font-size: 15px; }
+.sc .nm small { font-size: 12px; }
+.sc .n { min-width: 26px; height: 26px; font-size: 13px; }
+.g-vazio { color: var(--mut); font-size: 14px; line-height: 1.5; padding: 6px 0; }
+.g-mais { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--mut); }
+.g-num { font-family: var(--rot); font-size: 42px; line-height: 1; color: var(--cl); font-variant-numeric: tabular-nums; }
+.g-sub { margin-top: 6px; font-size: 13px; color: var(--mut); }
+.g-sep { margin: 14px 0 4px; }
+.g-como { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; line-height: 1.55; color: var(--mut); }
+.g-como b { color: var(--txt); }
+
+/* hero */
+.hero { grid-column: span 12; display: flex; align-items: center; gap: 22px; padding: 26px 28px;
+  background: radial-gradient(ellipse 60% 150% at 100% 0%, color-mix(in srgb, var(--cor) 30%, transparent), transparent 70%),
+              radial-gradient(ellipse 40% 100% at 0% 100%, color-mix(in srgb, var(--ouro) 10%, transparent), transparent 70%),
+              linear-gradient(180deg, var(--card2), var(--card)); }
+.hero-ic { flex: none; width: 68px; height: 68px; border-radius: 20px; display: grid; place-items: center; background: color-mix(in srgb, var(--cor) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--cor) 38%, var(--line)); box-shadow: 0 0 22px color-mix(in srgb, var(--cor) 28%, transparent); }
+.hero-ic img { width: 46px; height: 46px; object-fit: contain; }
+.hero-txt { min-width: 0; flex: 1; }
+.hero-crumb { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--mut); text-transform: uppercase; }
+.hero h2 { font-family: var(--rot); font-size: 34px; line-height: 1.1; color: var(--cl); margin: 6px 0 8px; font-weight: 700; }
+.hero h2 em { font-style: normal; color: var(--cor); }
+.hero p { color: var(--mut); font-size: 15px; line-height: 1.5; max-width: 560px; }
+.hero p b { color: var(--txt); }
+.hero-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.hbtn { display: inline-block; padding: 11px 18px; border-radius: 12px; font: 800 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-decoration: none; cursor: pointer; border: 1px solid var(--line); background: var(--card2); color: var(--txt); transition: all .2s; }
+.hbtn:hover { border-color: var(--cor); }
+.hbtn.pri { background: var(--cor); border-color: var(--cor); color: #0B0604; }
+.hero-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.hero-side img { height: 60px; max-width: 220px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(227,80,42,.35)); }
+.hero-side img.deadlock { height: 76px; }
+.ldot { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; vertical-align: middle; background: var(--mut); }
+.sc-chip.ok .ldot { background: var(--cor); box-shadow: 0 0 8px var(--cor); animation: pulsa 1.8s ease-in-out infinite; }
+@keyframes pulsa { 50% { opacity: .35; } }
+
+/* numeros em destaque */
+.st .lbl { margin-bottom: 10px; }
+.st-ic { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+/* agora na live */
+.agora { display: flex; align-items: center; gap: 16px; }
+.agora > img { flex: none; width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 0 14px rgba(227,80,42,.4)); }
+.agora > div { min-width: 0; }
+.agora .big { font-size: 24px; }
+
+/* cassino */
+.sc .potecard { gap: 14px; }
+.sc .pote { flex-basis: 96px; }
+
+/* calendario de atividade */
+.heat { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.hc { aspect-ratio: 1.3; border-radius: 9px; display: grid; place-items: center; font: 700 12px 'Montserrat', sans-serif; color: var(--mut); background: var(--card2); border: 1px solid transparent; }
+.hc.vz { background: transparent; }
+.hc.h1 { background: color-mix(in srgb, var(--cor) 22%, var(--card2)); color: var(--txt); }
+.hc.h2 { background: color-mix(in srgb, var(--cor) 42%, var(--card2)); color: var(--cl); }
+.hc.h3 { background: color-mix(in srgb, var(--cor) 66%, var(--card2)); color: var(--cl); }
+.hc.h4 { background: var(--cor); color: #0B0604; }
+.hc.hoje { outline: 1px dashed var(--cl); outline-offset: -3px; }
+.heat-leg { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--mut); }
+.heat-leg i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; background: var(--card2); }
+.heat-leg i.h1 { background: color-mix(in srgb, var(--cor) 22%, var(--card2)); } .heat-leg i.h2 { background: color-mix(in srgb, var(--cor) 42%, var(--card2)); }
+.heat-leg i.h3 { background: color-mix(in srgb, var(--cor) 66%, var(--card2)); } .heat-leg i.h4 { background: var(--cor); }
+
+/* como participar */
+.comog { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.como-t { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; text-align: left; cursor: pointer; font: inherit; color: var(--txt); background: color-mix(in srgb, var(--card2) 70%, var(--card)); border: 1px solid var(--line); border-radius: 14px; padding: 14px; transition: all .2s; }
+.como-t:hover { border-color: var(--cor); transform: translateY(-2px); }
+.como-t .sc-i { margin-bottom: 10px; }
+.como-t b { display: block; font-family: var(--rot); font-size: 13px; letter-spacing: 1.5px; color: var(--cl); margin-bottom: 6px; }
+.como-t > span:not(.sc-i) { display: block; font-size: 13px; line-height: 1.5; color: var(--mut); }
+.como-t > span em { font-style: normal; color: var(--txt); font-weight: 700; }
+
+@media (max-width: 900px) {
+  .s3, .s4 { grid-column: span 6; } .s5, .s7 { grid-column: span 12; }
+  .hero { flex-direction: column; align-items: flex-start; } .hero-side { flex-direction: row; align-items: center; width: 100%; }
+}
+@media (max-width: 560px) {
+  #geral { gap: 10px; } .s3 { grid-column: span 12; } .s3.st { grid-column: span 6; } .sc-h { flex-wrap: wrap; } .sc-t { overflow: visible; white-space: normal; } .s4, .s6 { grid-column: span 12; }
+  .hero { padding: 20px 18px; } .hero h2 { font-size: 26px; } .g-num { font-size: 34px; }
+}
+@media (prefers-reduced-motion: reduce) { .sc-chip.ok .ldot { animation: none; } .como-t:hover { transform: none; } }
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -244,6 +352,7 @@ footer { position: relative; z-index: 1; }
   </header>
 
   <nav id="tabs">
+    <button data-aba="geral" data-nome="GERAL">GERAL</button>
     <button data-aba="dbd" data-nome="DBD">DBD</button>
     <button data-aba="over" data-nome="OVER">OVER</button>
     <button data-aba="deadlock" data-nome="DEADLOCK">DEADLOCK</button>
@@ -253,7 +362,7 @@ footer { position: relative; z-index: 1; }
     <button data-aba="capa" data-nome="CAPA">CAPA</button>
   </nav>
 
-  <div class="status">
+  <div class="status" id="statusRow">
     <span id="pill" class="pill">carregando…</span>
     <div id="jogoLogo" class="jogologo" hidden></div>
     <span id="upd"></span>
@@ -278,7 +387,9 @@ footer { position: relative; z-index: 1; }
 
   <div id="painel"></div>
 
-  <div class="card">
+  <div id="geral" hidden></div>
+
+  <div class="card" id="filaCard">
     <div class="lbl" id="filaLbl">NA FILA</div>
     <ol id="lista"></ol>
   </div>
@@ -354,6 +465,7 @@ const OFFLINE_MIN   = 30;   // sem atualização há X min = "live offline"
 const NOMES = { dbd: 'DBD', over: 'Overwatch', deadlock: 'Deadlock' };
 const EMB = { dbd: 'emb-dbd.webp', over: 'emb-over.webp', deadlock: 'emb-deadlock.webp' };
 const ABAS = {
+  geral: { agora: '', vazio: '', outro: '', como: '' },
   dbd:  {  agora: 'KILLER AGORA', vazio: 'Nenhum killer na fila. Seja o primeiro!', outro: 'Overwatch',
           como: 'Mande um Pix pelo LivePix com o <b>nome do killer</b> na mensagem.<br><b>R$ 1</b> escolhe o killer · <b>R$ 2</b> escolhe com build (escreva "build").' },
   over: { agora: 'HERÓI AGORA',  vazio: 'Nenhum herói na fila. Seja o primeiro!', outro: 'DBD',
@@ -590,12 +702,12 @@ async function carregarMes() {
     // giros da roleta entram no calendário com o mesmo formato dos outros
     cal.linhas = a.concat(b.map(x => ({ aba: 'roleta', quem: x.quem, escolha: x.resultado, build: false, origem: '', feito_em: x.created_at })))
       .concat(c.map(x => ({ aba: 'capa', quem: x.quem || '', escolha: x.jogo, id: x.steam_id, partida: x.partida, rodada: x.rodada, pontos: x.pontos, feito_em: x.created_at })));
-    if (aba === 'capa') renderCapa(); else renderCal();
+    if (aba === 'capa') renderCapa(); else if (aba === 'geral') renderGeral(); else renderCal();
   } catch (e) {}
 }
 
 function renderCal() {
-  if (!aba) return;
+  if (!aba || aba === 'geral') return;
   const porDia = {};
   cal.linhas.filter(l => l.aba === aba).forEach(l => {
     const d = new Date(l.feito_em).getDate();
@@ -646,6 +758,186 @@ $('calGrid').addEventListener('click', e => {
 $('calPrev').addEventListener('click', () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
 $('calNext').addEventListener('click', () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } cal.dia = null; cal.linhas = []; renderCal(); carregarMes(); });
 
+
+/* ---------- GERAL (painel do público: tudo da comunidade numa tela só) ---------- */
+const JOGOS = ['dbd', 'over', 'deadlock'];
+const IC = {
+  grid: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>',
+  live: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19a10 10 0 0 1 0-14"/></svg>',
+  list: '<svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>',
+  film: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>',
+  coin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></svg>',
+  roleta: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>',
+  capa: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  cal: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',
+  trofeu: '<svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>',
+  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+};
+
+function abas() {   // abas: pontinho lava no jogo que está ativo na live
+  document.querySelectorAll('#tabs button').forEach(b => {
+    const k = b.dataset.aba;
+    b.classList.toggle('on', k === aba);
+    const ativo = JOGOS.includes(k) && dados[k]?.data?.ativo === true;
+    b.innerHTML = (k === 'geral' ? `<span class="emb ico">${IC.grid}</span>` : (EMB[k] ? `<img class="emb" src="${EMB[k]}" alt="">` : '')) + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
+  });
+}
+
+function irAba(k) {
+  if (!ABAS[k]) return;
+  aba = k; cal.dia = null;
+  if (k === 'geral' && (cal.y !== hojeD.getFullYear() || cal.m !== hojeD.getMonth())) {   // a GERAL sempre mostra o mês atual
+    cal.y = hojeD.getFullYear(); cal.m = hojeD.getMonth(); cal.linhas = []; carregarMes();
+  }
+  history.replaceState(null, '', '#' + k);
+  render();
+  scrollTo({ top: 0 });
+}
+
+const onlineAba = k => { const l = dados[k]; return !!(l && temDado(l.data) && l.updated_at && (Date.now() - new Date(l.updated_at)) / 60000 <= OFFLINE_MIN); };
+let geralHtml = '';
+
+function renderGeral() {
+  const el = $('geral');
+  const carregou = Object.keys(dados).length > 0;
+  const agora = new Date(), hr = agora.getHours();
+  const saud = hr < 5 ? 'Boa madrugada' : hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+  const dataTxt = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const sc = (cls, ic, tit, ir, corpo, chip) => `<section class="sc ${cls}"><div class="sc-h"><span class="sc-i">${IC[ic]}</span><span class="sc-t">${tit}</span>${chip || ''}${ir ? `<button class="sc-go" data-ir="${ir}">ABRIR ›</button>` : ''}</div>${corpo}</section>`;
+  const vazio = t => `<div class="g-vazio">${t}</div>`;
+  const rank = (arr, f) => `<ol>${arr.map((p, i) => `<li><span class="n${i === 0 ? ' ouro' : (i < 3 ? ' pod' : '')}">${i + 1}</span>${f(p)}</li>`).join('')}</ol>`;
+
+  // ---- a live: qual jogo está no ar ----
+  const ativoK = JOGOS.find(k => dados[k]?.data?.ativo === true);
+  const k = ativoK || JOGOS.slice().sort((a, b) => new Date(dados[b]?.updated_at || 0) - new Date(dados[a]?.updated_at || 0))[0];
+  const L = dados[k] || {}, d = L.data || {};
+  const noAr = !!ativoK && onlineAba(k);
+  const aberta = d.aberta !== false;
+  const fila = noAr && Array.isArray(d.fila) ? d.fila : [];
+
+  // ---- dados dos outros módulos ----
+  const fx = dados.flix?.data || {}, fxOn = onlineAba('flix');
+  const filmes = fxOn && Array.isArray(fx.fila) ? fx.fila : [];
+  const cd = dados.cassino?.data || {}, cOn = onlineAba('cassino');
+  const ctop = Array.isArray(cd.top) ? cd.top : [];
+  const moeda = esc(cd.moeda || 'BIGOCOINS');
+  const rd = dados.roleta?.data || {}, rOn = onlineAba('roleta');
+  const rFila = Array.isArray(rd.fila) ? rd.fila : [], rDes = Array.isArray(rd.desafios) ? rd.desafios : [];
+  const rAt = rDes.find(x => x.inicio && !x.cumprido) || rDes.find(x => !x.inicio);
+
+  // ---- histórico do mês (calendário compartilhado) ----
+  const feitos = cal.linhas.filter(l => ['dbd', 'over', 'deadlock', 'flix'].includes(l.aba));
+  const ativ = cal.linhas.filter(l => l.aba !== 'capa');
+  const porDia = {};
+  ativ.forEach(l => { const dd = new Date(l.feito_em).getDate(); porDia[dd] = (porDia[dd] || 0) + 1; });
+  const max = Math.max(1, ...Object.values(porDia));
+  const quem = {};
+  feitos.forEach(l => { const q = (l.quem || '').toLowerCase(); if (!q) return; const o = quem[q] || (quem[q] = { n: l.quem, c: 0 }); o.c++; });
+  const ativos = Object.values(quem).sort((a, b) => b.c - a.c).slice(0, 5);
+  const pts = {};
+  cal.linhas.filter(l => l.aba === 'capa' && l.quem).forEach(l => { const q = l.quem.toLowerCase(); const o = pts[q] || (pts[q] = { n: l.quem, p: 0, w: 0 }); o.p += l.pontos || 0; o.w++; });
+  const capaTop = Object.values(pts).sort((a, b) => b.p - a.p).slice(0, 3);
+
+  // ---- HERO ----
+  const sub = !carregou ? 'Carregando o painel…'
+    : noAr ? `A live está no ar com <b>${NOMES[k]}</b> · fila ${aberta ? 'aberta' : 'fechada'} · <b>${fila.length}</b> ${fila.length === 1 ? 'pedido' : 'pedidos'} na fila.`
+    : `A live está offline${L.updated_at ? ' · última atividade ' + haQuanto(L.updated_at) : ''}. Quando ela abrir, tudo aqui se atualiza sozinho.`;
+  const hero = `<section class="sc hero">
+      <div class="hero-ic"><img src="icone.png" alt="TJ"></div>
+      <div class="hero-txt">
+        <div class="hero-crumb">TIL JHIN · Painel da comunidade · ${esc(dataTxt)}</div>
+        <h2>${saud}, <em>Bigodinho</em></h2>
+        <p>${sub}</p>
+        <div class="hero-acts">
+          <a class="hbtn pri" href="${LIVEPIX}" target="_blank" rel="noopener">PEDIR PELO LIVEPIX</a>
+          <button class="hbtn" data-ir="${noAr ? k : 'dbd'}">VER A FILA</button>
+        </div>
+      </div>
+      <div class="hero-side">
+        <span class="sc-chip${noAr ? ' ok' : ''}"><span class="ldot"></span>${noAr ? 'AO VIVO' : 'OFFLINE'}</span>
+        ${noAr ? `<img class="${k}" src="logo-${k}.webp" alt="${NOMES[k]}">` : ''}
+      </div>
+    </section>`;
+
+  // ---- números em destaque ----
+  const stat = (ic, lb, val, sb) => `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">${lb}</span><span class="sc-i">${IC[ic]}</span></div><div class="g-num">${val}</div><div class="g-sub">${sb}</div></section>`;
+  const stats = stat('check', 'FEITOS NO MÊS', fmtN(feitos.length), 'pedidos atendidos em ' + MESES[cal.m])
+    + stat('list', 'NA FILA AGORA', noAr ? fmtN(fila.length) : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento')
+    + stat('coin', 'JARRO DO CASSINO', cd.jarro !== undefined && cOn ? fmtN(cd.jarro) : '—', moeda)
+    + stat('roleta', 'GIROS NA ROLETA', rOn ? fmtN(rFila.length) : '—', rOn ? (rd.girando ? 'girando agora' : 'aguardando giro') : 'roleta offline');
+
+  // ---- AGORA NA LIVE ----
+  const atual = noAr ? d.atual : null;
+  const agoraC = noAr
+    ? (atual
+      ? `<div class="agora"><img src="emb-${k}.webp" alt=""><div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>`
+      : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
+    : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
+  const cAgora = sc('s5', 'live', 'AGORA NA LIVE', noAr ? k : 'dbd', agoraC + (noAr ? `<div class="g-como">${ABAS[k].como}</div>` : ''), noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
+
+  // ---- PRÓXIMOS NA FILA ----
+  const cFila = sc('s4', 'list', 'PRÓXIMOS NA FILA', noAr ? k : 'dbd',
+    fila.length ? rank(fila.slice(0, 5), p => `<div class="nm">${esc(p.escolha)}${tags(p)}<small>${esc(p.quem)}</small></div>`) + (fila.length > 5 ? `<div class="g-mais">+ ${fila.length - 5} NA FILA</div>` : '')
+    : vazio(noAr ? ABAS[k].vazio : 'Sem live no momento.'));
+
+  // ---- BIGOFLIX ----
+  const fm = fxOn ? fx.filme : null;
+  const cFlix = sc('s3', 'film', 'BIGOFLIX', 'flix',
+    (fm ? `<div class="lbl">FILME DA SEMANA</div><div class="big" style="font-size:20px">${esc(fm.titulo)}</div><div class="who">${esc(fm.onde || (fm.quem ? 'pedido de ' + fm.quem : ''))}</div>` : vazio('Nenhum filme da semana definido.'))
+    + (filmes.length ? `<div class="g-mais">${filmes.length} ${filmes.length === 1 ? 'PEDIDO' : 'PEDIDOS'} NA FILA</div>` : '')
+    + `<div class="g-como">${ABAS.flix.como}</div>`);
+
+  // ---- CASSINO ----
+  const lider = ctop[0];
+  const cCass = sc('s5', 'coin', 'CASSINO', 'cassino',
+    (cOn && cd.jarro !== undefined
+      ? `<div class="potecard">${pote(cd.jarro, cd.jarroCheio)}<div class="potetxt"><div class="lbl">JARRO DO JACKPOT</div><div class="big jar">${fmtN(cd.jarro)}<span class="moeda">${moeda}</span></div><div class="who">7-7-7 leva o jarro inteiro</div></div></div>`
+      : vazio('O cassino abre junto com a live. Digite !cassino no chat.'))
+    + (ctop.length ? `<div class="lbl g-sep">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome) : ' DO MÊS'}</div>` + rank(ctop.slice(0, 3), p => `<div class="nm">${esc(p.nome)}</div><b class="val">+${fmtN(p.liquido)}</b>`) : ''));
+
+  // ---- ROLETA ----
+  const cRol = sc('s3', 'roleta', 'ROLETA', 'roleta',
+    rOn ? `<div class="g-num">${fmtN(rFila.length)}</div><div class="g-sub">${rFila.length === 1 ? 'giro na fila' : 'giros na fila'}${rd.dobro ? ' · doação vale em dobro' : ''}</div>`
+        + (rAt ? `<div class="g-mais">${rAt.cumprido ? 'DESAFIO CUMPRIDO' : (rAt.inicio ? 'DESAFIO EM ANDAMENTO' : 'DESAFIO AGUARDANDO')}<div class="who" style="letter-spacing:0;font-weight:600;margin-top:4px;color:var(--txt)">${esc(rAt.nome)}</div></div>` : '')
+        : vazio('Roleta offline. Doações viram giros quando a live abre.'));
+
+  // ---- JOGO DA CAPA ----
+  const cCapa = sc('s4', 'capa', 'JOGO DA CAPA', 'capa',
+    capaTop.length ? `<div class="lbl" style="margin-bottom:0">RANKING DE ${MESES[cal.m].toUpperCase()}</div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`)
+    : vazio(ABAS.capa.vazio));
+
+  // ---- ATIVIDADE DO MÊS ----
+  const diasMes = new Date(cal.y, cal.m + 1, 0).getDate(), primeiro = new Date(cal.y, cal.m, 1).getDay();
+  const ehMes = cal.y === hojeD.getFullYear() && cal.m === hojeD.getMonth();
+  let heat = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(x => `<div class="cal-dow">${x}</div>`).join('');
+  for (let i = 0; i < primeiro; i++) heat += '<div class="hc vz"></div>';
+  for (let dd = 1; dd <= diasMes; dd++) {
+    const n = porDia[dd] || 0, nv = n ? 1 + Math.min(3, Math.floor(n / max * 3.999)) : 0;
+    heat += `<div class="hc${nv ? ' h' + nv : ''}${ehMes && dd === hojeD.getDate() ? ' hoje' : ''}" title="${n} em ${pad(dd)}/${pad(cal.m + 1)}">${dd}</div>`;
+  }
+  const cAtiv = sc('s7', 'cal', `ATIVIDADE · ${MESES[cal.m].toUpperCase()} ${cal.y}`, '',
+    `<div class="heat">${heat}</div><div class="heat-leg">MENOS <i></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> MAIS<span style="margin-left:auto">${fmtN(ativ.length)} no mês</span></div>`);
+
+  // ---- MAIS ATIVOS ----
+  const cTop = sc('s5', 'trofeu', 'BIGODINHOS DO MÊS', '',
+    ativos.length ? `<div class="lbl" style="margin-bottom:0">QUEM MAIS PEDIU</div>` + rank(ativos, p => `<div class="nm">${esc(p.n)}</div><b class="val">${plural(p.c, 'pedido', 'pedidos')}</b>`)
+    : vazio('Ninguém teve pedido atendido neste mês ainda. Pede o seu!'));
+
+  // ---- COMO PARTICIPAR ----
+  const t = (ir, ic, tit, txt) => `<button class="como-t" data-ir="${ir}"><span class="sc-i">${IC[ic]}</span><b>${tit}</b><span>${txt}</span></button>`;
+  const cComo = sc('s12', 'info', 'COMO PARTICIPAR', '', `<div class="comog">`
+    + t(noAr ? k : 'dbd', 'list', 'PEDIR NA FILA', 'Pix pelo LivePix com o <em>nome do killer ou herói</em> na mensagem. <em>R$ 1</em> escolhe; no DBD, <em>R$ 2</em> escolhe com build.')
+    + t('flix', 'film', 'BIGOFLIX', 'Pix de <em>R$ 15</em> com a palavra <em>filme</em> e o nome do filme na mensagem.')
+    + t('cassino', 'coin', 'CASSINO', 'Digite <em>!cassino</em> no chat e aposte seus BIGOCOINS. Só o 7 com bigode leva o jarro.')
+    + t('roleta', 'roleta', 'ROLETA', 'Cada R$ de doação vira <em>giros</em> na roleta da live.')
+    + t('capa', 'capa', 'JOGO DA CAPA', 'Digite o <em>nome do jogo</em> no chat, sem comando. Quem acerta primeiro leva mais pontos.')
+    + `</div>`);
+
+  const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cAtiv + cTop + cComo;
+  if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; }
+}
+
 /* ---------- BUSCA ---------- */
 async function rpc(fn, body) {
   try {
@@ -663,7 +955,7 @@ async function buscar() {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker?select=id,data,updated_at`, { headers: { apikey: SUPABASE_KEY } });
     if (!r.ok) throw new Error(r.status);
     dados = Object.fromEntries((await r.json()).map(l => [l.id, l]));
-    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : (['over', 'deadlock'].find(k => dados[k]?.data?.ativo === true) || 'dbd');
+    if (!aba) aba = ABAS[location.hash.slice(1)] ? location.hash.slice(1) : 'geral';
     // o HUD já aplicou o clique (a aba foi atualizada depois dele): libera o botão
     const upd = new Date(dados[aba]?.updated_at || 0).getTime();
     Object.keys(pend).forEach(id => { if (upd > pend[id] || Date.now() - pend[id] > 15000) delete pend[id]; });
@@ -676,18 +968,22 @@ async function buscar() {
 
 function render() {
   if (!aba) return;
+  const geral = aba === 'geral';
+  document.querySelector('.wrap').classList.toggle('wide', geral);
+  $('geral').hidden = !geral;
+  abas();
+  if (geral) {
+    ['statusRow', 'filaCard', 'feitosCard', 'calCard', 'comoCard', 'capaCtl'].forEach(i => { $(i).hidden = true; });
+    $('topo').innerHTML = ''; $('painel').innerHTML = ''; pnKey = '';
+    renderGeral();
+    return;
+  }
+  $('statusRow').hidden = false; $('filaCard').hidden = false; $('capaCtl').hidden = !(ADMIN && senha);
   painel();
   $('calCard').hidden = aba === 'cassino';
   const a = ABAS[aba], linha = dados[aba] || {}, d = linha.data || {};
   const recebeu = temDado(d);
   const offline = !recebeu || !linha.updated_at || (Date.now() - new Date(linha.updated_at)) / 60000 > OFFLINE_MIN;
-
-  // abas: pontinho lava no jogo que está ativo na live
-  document.querySelectorAll('#tabs button').forEach(b => {
-    b.classList.toggle('on', b.dataset.aba === aba);
-    const ativo = !['flix', 'roleta', 'cassino', 'capa'].includes(b.dataset.aba) && dados[b.dataset.aba]?.data?.ativo === true;
-    b.innerHTML = (EMB[b.dataset.aba] ? `<img class="emb" src="${EMB[b.dataset.aba]}" alt="">` : '') + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
-  });
 
   // logo do jogo (creme) acima da fila, só nas abas DBD, OVER e DEADLOCK
   const lg = $('jogoLogo'), src = { dbd: 'logo-dbd.webp', over: 'logo-over.webp', deadlock: 'logo-deadlock.webp' }[aba];
@@ -847,7 +1143,7 @@ function admUI() {
   b.className = 'adm-badge' + (senha ? ' on' : '');
   b.textContent = (senha ? 'ADMIN' : '🔒 ADMIN') + (window.TEMA && TEMA.rotulo() ? ' · ' + TEMA.rotulo() : '');   // lembra que o tema está forçado
   b.title = senha ? 'Modo admin ativo' : 'Entrar no modo admin';
-  $('capaCtl').hidden = !senha;
+  $('capaCtl').hidden = !senha || aba === 'geral';
 }
 
 // erro rápido no selo (some em 4 s)
@@ -969,7 +1265,10 @@ setInterval(capaEstado, 1000);
 
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  aba = b.dataset.aba; cal.dia = null; history.replaceState(null, '', '#' + aba); render();
+  irAba(b.dataset.aba);
+});
+$('geral').addEventListener('click', e => {
+  const b = e.target.closest('[data-ir]'); if (b) irAba(b.dataset.ir);
 });
 document.addEventListener('visibilitychange', ciclo);
 admUI();
