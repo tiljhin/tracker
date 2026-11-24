@@ -146,6 +146,16 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .capaSeq div.at img { border-color: var(--cor); }
 .capaSeq img { display: block; width: 62px; height: 93px; object-fit: contain; background: #0B0604; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 3px; }
 .capaSeq span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* histórico do jogo da capa */
+.capaHist { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.capaHist .tile { flex: 0 0 96px; text-align: center; }
+.capaHist .tile img { display: block; width: 96px; height: 144px; object-fit: contain; background: #0B0604; border: 1px solid var(--line); border-radius: 8px; }
+.capaHist .tile.ok img { border-color: var(--cor); }
+.capaHist .tile b { display: block; margin-top: 6px; font-size: 12px; color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.capaHist .tile.nao b { color: var(--mut); font-weight: 600; }
+.capaHist .tile small { display: block; margin-top: 2px; font-size: 10px; color: var(--mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.capapart { display: block !important; }
+.capapart > small { display: block; margin-top: 6px; font-size: 11px; color: var(--mut); letter-spacing: 1px; }
 /* selo no topo, à direita (em cima do BIGOFLIX): 🔒 deslogado · ● ADMIN logado */
 .adm-badge {
   position: absolute; top: 0; right: 0;
@@ -240,6 +250,7 @@ footer { position: relative; z-index: 1; }
     <button data-aba="flix" data-nome="BIGOFLIX">BIGOFLIX</button>
     <button data-aba="roleta" data-nome="ROLETA">ROLETA</button>
     <button data-aba="cassino" data-nome="CASSINO">CASSINO</button>
+    <button data-aba="capa" data-nome="CAPA">CAPA</button>
   </nav>
 
   <div class="status">
@@ -352,6 +363,8 @@ const ABAS = {
   flix: { agora: 'FILME DA SEMANA', vazio: 'Nenhum pedido de filme ainda.',
           como: 'Mande um Pix de <b>R$ 15</b> pelo LivePix com a palavra <b>filme</b> e o nome do filme na mensagem.' },
   roleta: { agora: 'GIRANDO AGORA', vazio: 'Nenhum giro na fila.', outro: '', como: '' },
+  capa: { agora: '', vazio: 'Nenhuma partida registrada neste mês.', outro: '',
+          como: 'Quando o jogo da capa estiver rolando na live, <b>digite o nome do jogo</b> no chat, sem nenhum comando. O mais rápido a acertar leva mais pontos.<br>O ranking soma os pontos do mês e zera todo mês.' },
   cassino: { agora: '', vazio: 'Ninguém no lucro este mês ainda. Seja o primeiro!', outro: '',
           como: 'Digite <b>!cassino</b> no chat da live (ou <b>!cassino 100</b> / <b>!cassino tudo</b>) e aposte seus <b>BIGOCOINS</b>.<br>O ranking é o saldo do mês (prêmios menos apostas) e zera todo mês. Só o <b>7 com bigode</b> leva o jarro.' }
 };
@@ -523,6 +536,39 @@ function renderCassino(d, offline, recebeu, linha) {
   $('btnPix').hidden = true;
 }
 
+/* ---------- CAPA (aba própria: última partida, ranking do mês e histórico no calendário) ---------- */
+function capaTile(l) {
+  const ok = !!l.quem;
+  return `<div class="tile ${ok ? 'ok' : 'nao'}"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${esc(l.id)}/library_600x900.jpg" onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${esc(l.id)}/header.jpg'" alt=""><b>${ok ? esc(l.quem) : 'ninguém'}</b><small>${esc(l.escolha)}</small></div>`;
+}
+function partidas(linhas) {
+  const m = new Map();
+  linhas.forEach(l => { if (!m.has(l.partida)) m.set(l.partida, []); m.get(l.partida).push(l); });
+  return [...m.values()].map(r => r.sort((x, y) => x.rodada - y.rodada));
+}
+function renderCapa() {
+  $('pill').textContent = 'Jogo da capa';
+  $('pill').className = 'pill ok';
+  $('upd').textContent = '';
+  $('jogoLogo').hidden = true;
+  const L = cal.linhas.filter(l => l.aba === 'capa'), P = partidas(L), ult = P[P.length - 1];
+  $('topo').innerHTML = ult ? `<div class="card"><div class="lbl">ÚLTIMA PARTIDA</div><div class="capaHist">${ult.map(capaTile).join('')}</div></div>` : '';
+  const pts = {};
+  L.filter(l => l.quem).forEach(l => { const o = pts[l.quem.toLowerCase()] || (pts[l.quem.toLowerCase()] = { n: l.quem, p: 0, w: 0 }); o.p += l.pontos || 0; o.w++; });
+  const top = Object.values(pts).sort((x, y) => y.p - x.p).slice(0, 10);
+  $('filaLbl').innerHTML = `RANKING DE ${MESES[cal.m].toUpperCase()}`;
+  $('lista').innerHTML = top.length
+    ? top.map((p, k) => `<li><span class="n${k === 0 ? ' ouro' : (k < 3 ? ' pod' : '')}">${k + 1}</span><div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b></li>`).join('')
+    : `<li><div class="vazio" style="width:100%">${ABAS.capa.vazio}</div></li>`;
+  $('feitosCard').hidden = true;
+  $('como').innerHTML = ABAS.capa.como;
+  $('comoLbl').textContent = 'COMO JOGAR';
+  $('comoCard').hidden = false;
+  $('btnPix').hidden = true;
+  renderCal();
+}
+setInterval(() => { if (aba === 'capa' && !document.hidden) carregarMes(); }, 15000);
+
 /* ---------- CALENDÁRIO (histórico de feitos, por dia) ---------- */
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const hojeD = new Date();
@@ -533,15 +579,18 @@ async function carregarMes() {
   const fim = new Date(cal.y, cal.m + 1, 1).toISOString();
   const cab = { headers: { apikey: SUPABASE_KEY } };
   try {
-    const [r1, r2] = await Promise.all([
+    const [r1, r2, r3] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/tracker_hist?select=aba,quem,escolha,build,origem,feito_em&and=(feito_em.gte.${ini},feito_em.lt.${fim})&order=feito_em.asc`, cab),
-      fetch(`${SUPABASE_URL}/rest/v1/roleta_hist?select=quem,resultado,jogo,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`, cab)
+      fetch(`${SUPABASE_URL}/rest/v1/roleta_hist?select=quem,resultado,jogo,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`, cab),
+      fetch(`${SUPABASE_URL}/rest/v1/capa_hist?select=partida,rodada,jogo,steam_id,quem,pontos,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`, cab)
     ]);
     const a = r1.ok ? await r1.json() : [];
     const b = r2.ok ? await r2.json() : [];
+    const c = r3.ok ? await r3.json() : [];
     // giros da roleta entram no calendário com o mesmo formato dos outros
-    cal.linhas = a.concat(b.map(x => ({ aba: 'roleta', quem: x.quem, escolha: x.resultado, build: false, origem: '', feito_em: x.created_at })));
-    renderCal();
+    cal.linhas = a.concat(b.map(x => ({ aba: 'roleta', quem: x.quem, escolha: x.resultado, build: false, origem: '', feito_em: x.created_at })))
+      .concat(c.map(x => ({ aba: 'capa', quem: x.quem || '', escolha: x.jogo, id: x.steam_id, partida: x.partida, rodada: x.rodada, pontos: x.pontos, feito_em: x.created_at })));
+    if (aba === 'capa') renderCapa(); else renderCal();
   } catch (e) {}
 }
 
@@ -576,9 +625,11 @@ function renderCal() {
   $('calGrid').innerHTML = g;
 
   const lista = dia ? porDia[dia] : [];
-  const rotulo = aba === 'roleta' ? 'GIROS' : 'FEITOS';
+  const rotulo = aba === 'roleta' ? 'GIROS' : (aba === 'capa' ? 'PARTIDAS' : 'FEITOS');
   $('calTit').textContent = dia ? `${rotulo} EM ${pad(dia)}/${pad(cal.m + 1)}/${cal.y}` : 'NADA REGISTRADO NESTE MÊS';
-  $('calLista').innerHTML = lista.length
+  $('calLista').innerHTML = lista.length && aba === 'capa'
+    ? partidas(lista).map(r => { const t = new Date(r[0].feito_em); return `<li class="capapart"><div class="capaHist">${r.map(capaTile).join('')}</div><small>${pad(t.getHours())}:${pad(t.getMinutes())} · ${r.length} ${r.length === 1 ? 'rodada' : 'rodadas'}</small></li>`; }).join('')
+    : lista.length
     ? lista.map(l => {
         const t = new Date(l.feito_em);
         return `<li><span class="n">✔</span><div class="nm">${esc(l.escolha)}${tags(l)}<small>${esc(l.quem)} · ${pad(t.getHours())}:${pad(t.getMinutes())}</small></div></li>`;
@@ -634,7 +685,7 @@ function render() {
   // abas: pontinho lava no jogo que está ativo na live
   document.querySelectorAll('#tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.aba === aba);
-    const ativo = !['flix', 'roleta', 'cassino'].includes(b.dataset.aba) && dados[b.dataset.aba]?.data?.ativo === true;
+    const ativo = !['flix', 'roleta', 'cassino', 'capa'].includes(b.dataset.aba) && dados[b.dataset.aba]?.data?.ativo === true;
     b.innerHTML = (EMB[b.dataset.aba] ? `<img class="emb" src="${EMB[b.dataset.aba]}" alt="">` : '') + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
   });
 
@@ -645,6 +696,7 @@ function render() {
   // aba da roleta: tela própria
   if (aba === 'roleta') { renderRoleta(d, offline, recebeu, linha); renderCal(); return; }
   if (aba === 'cassino') return renderCassino(d, offline, recebeu, linha);
+  if (aba === 'capa') return renderCapa();
   $('comoLbl').textContent = 'COMO PEDIR';
   $('comoCard').hidden = false;
   $('btnPix').hidden = false;
