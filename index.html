@@ -407,6 +407,33 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .adm-box label{height:40px}
 .adm-box .rol-msg{min-height:0;margin:8px 0 0}
 .adm-box .rol-msg:empty{display:none}
+
+/* ---------- COMO PARTICIPAR (rodapé) ---------- */
+.como-box{background:linear-gradient(180deg,#2B2018,#1D1510);border:1px dashed #6A5240}
+.como-box .sc-t{color:#F3DDB5}
+.cts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 22px}
+.ct{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid #3F2F24;border-radius:12px;background:rgba(0,0,0,.18)}
+.ct img{width:34px;height:34px;object-fit:contain;flex:none;opacity:.95}
+.ct b{display:block;font:700 11px/1.2 Montserrat,sans-serif;letter-spacing:1.2px;color:#E3A059;margin-bottom:5px}
+.ct p{margin:0;font-size:13px;line-height:1.5;color:var(--mut)}
+.ct p b{display:inline;font:700 13px Montserrat,sans-serif;letter-spacing:0;color:var(--txt);margin:0}
+/* ---------- ADMIN em cor da marca (bronze/ouro) + recolher ---------- */
+.adm-box{--cor:#D79A4A;--line:#5A4120;--card:#17110A;--card2:#241A0E;--ouro:#E3A059;--txt:#F3DDB5;--mut:#A99273;--cl:#F7DDA8;background:linear-gradient(180deg,#1C150C,#120D07)!important;border:1px solid #5E4424!important;border-top:3px solid #D79A4A!important;box-shadow:0 0 26px rgba(215,154,74,.10)!important}
+.adm-tag{background:#D79A4A!important;color:#1A1208!important}
+.adm-box input[type=text],.adm-box input:not([type]),.adm-box input[type=number]{background:#0C0804!important;border-color:#4A361C!important;color:#F3DDB5!important}
+.pnrow.lives button{background:color-mix(in srgb,var(--c) 16%,#120D07)!important}
+.pnrow.lives button:hover{background:color-mix(in srgb,var(--c) 30%,#120D07)!important}
+.pnrow.lives button.on{background:var(--c)!important;color:#120D07!important}
+.adm-box button.pri,.adm-box .pnl button.pri,.adm-box .rolbtns button[data-rol="girar"],.adm-box .capabtns button[data-capa="iniciar"]{color:#1A1208!important}
+.lv-over{--c:#FB7A3C!important}
+#gAdm{margin-bottom:16px}
+.adm-grid{margin-bottom:0!important}
+.adm-tog{display:flex;align-items:center;gap:8px;margin:0 auto 10px;padding:6px 16px;border-radius:0 0 12px 12px;border:1px solid #5E4424;border-top:0;background:#1C150C;color:#E3A059;font:800 11px/1 Montserrat,sans-serif;letter-spacing:1.4px;cursor:pointer}
+.adm-tog:hover{background:#2A1E10}
+.adm-tog i{font-style:normal;transition:transform .2s}
+#gAdm.min .adm-tog i{transform:rotate(180deg)}
+#gAdm.min #gAdmBody{display:none}
+#gAdm.min{margin-bottom:6px}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -425,7 +452,9 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
   <div class="status" id="statusRow"><span id="pill" class="pill" hidden>sem conexão</span></div>
 
   <!-- ADMIN: só aparece com ?admin + senha. Cor própria (índigo) pra você saber que é daqui que manda -->
-  <div id="gAdm" class="adm-grid" hidden>
+  <div id="gAdm" hidden>
+    <button id="admTog" class="adm-tog" type="button" title="Recolher / abrir o painel admin"><i>▲</i><span>PAINEL ADMIN</span></button>
+    <div id="gAdmBody" class="adm-grid">
     <div class="adm-col"><div id="gAdmMain"></div><div id="gAdmFlix"></div></div>
     <div class="adm-side">
       <div id="gAdmRol"></div>
@@ -445,6 +474,7 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
         </div>
         <div class="rol-msg" id="capaMsg"></div>
       </div>
+    </div>
     </div>
   </div>
 
@@ -518,8 +548,10 @@ let dados = {}, aba = null, timer = null;
 
 // modo admin: link com ?admin · a senha fica salva só neste navegador
 const ADMIN = new URLSearchParams(location.search).has('admin');
+const DEMO = new URLSearchParams(location.search).has('demo');   // ?demo = dados de mentira só pra visualizar (não lê nem grava nada no banco)
 let senha = '';
 try { senha = localStorage.getItem('trkSenha') || ''; } catch (e) {}
+if (DEMO && ADMIN) senha = 'demo';
 const pend = {}; // pedidos com clique enviado, esperando o HUD aplicar
 
 function haQuanto(iso) {
@@ -579,6 +611,7 @@ const hojeD = new Date();
 const cal = { y: hojeD.getFullYear(), m: hojeD.getMonth(), dia: null, linhas: [] };
 
 async function carregarMes() {
+  if (DEMO) { cal.linhas = demoLinhas(); renderGeral(); return; }
   const ini = new Date(cal.y, cal.m, 1).toISOString();
   const fim = new Date(cal.y, cal.m + 1, 1).toISOString();
   const cab = { headers: { apikey: SUPABASE_KEY } };
@@ -702,7 +735,7 @@ function renderGeral() {
       ? `<div class="agora"><img src="emb-${k}.webp" alt=""><div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
-  const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC + (noAr ? `<div class="g-como">${ABAS[k].como}</div>` : ''), noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
+  const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
 
   // ---- FILA: um conjunto por jogo (DBD / OVER / DEADLOCK), escolhido nas pastilhas ----
   const sel = JOGOS.includes(filaSel) ? filaSel : k;
@@ -721,7 +754,7 @@ function renderGeral() {
   const pausa = onS && dS.ativo !== true ? `<div class="g-mais">FILA PAUSADA · A LIVE ESTÁ EM ${esc((NOMES[ativoK] || 'OUTRO JOGO').toUpperCase())}</div>` : '';
   const feitC = feitS.length ? `<div class="lbl sub-l">FEITOS NESTA LIVE · ${feitS.length}</div><ol>${feitS.map(i => `<li><span class="n">✔</span><div class="nm">${esc(i.escolha)}${i.build ? '<span class="tag">BUILD</span>' : ''}<small>${esc(i.quem)}</small></div></li>`).join('')}</ol>` : '';
   const cFila = sc('s7', 'list', `FILA · ${NOMES[sel].toUpperCase()}`, '',
-    chips + pausa + (li ? `<div class="rolagem"><ol>${li}</ol></div>` : vazio(onS ? ABAS[sel].vazio : 'Sem live neste jogo no momento.')) + feitC + `<div class="g-como">${ABAS[sel].como}</div>`,
+    chips + pausa + (li ? `<div class="rolagem"><ol>${li}</ol></div>` : vazio(onS ? ABAS[sel].vazio : 'Sem live neste jogo no momento.')) + feitC,
     `<span class="sc-chip">${filaS.length} ${filaS.length === 1 ? 'PEDIDO' : 'PEDIDOS'}</span>`);
 
   // ---- BIGOFLIX ----
@@ -729,14 +762,14 @@ function renderGeral() {
   const cFlix = sc('s4', 'film', 'BIGOFLIX', '',
     (fm ? `<div class="lbl">FILME DA SEMANA</div><div class="big" style="font-size:20px">${esc(fm.titulo)}</div><div class="who">${esc(fm.onde || (fm.quem ? 'pedido de ' + fm.quem : ''))}</div>` : vazio('Nenhum filme da semana definido.'))
     + (filmes.length ? `<div class="lbl sub-l">NA FILA · ${filmes.length}</div><div class="rolagem"><ol>${filmes.map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}<small>${esc(p.quem)}</small></div>${admOn ? botoes(p) + posBtns(i, true) : ''}</li>`).join('')}</ol></div>` : '')
-    + `<div class="g-como">${ABAS.flix.como}</div>`);
+  );
 
   // ---- CASSINO ----
   const hall = Array.isArray(cd.hall) ? cd.hall : [];
   const cCass = sc('s4', 'coin', 'CASSINO', '',
     (ctop.length ? `<div class="lbl" style="margin-bottom:0">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
     + (hall.length ? `<div class="lbl sub-l">HALL DOS JACKPOTS</div><ol>${hall.slice(0, 3).map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('')}</ol>` : '')
-    + `<div class="g-como">${ABAS.cassino.como}</div>`);
+  );
 
   // ---- ROLETA ----
   const jogoRol = ({ over: 'OVERWATCH', deadlock: 'DEADLOCK' })[rd.jogo] || 'DBD';
@@ -751,7 +784,7 @@ function renderGeral() {
   const cCapa = sc('s6', 'capa', 'JOGO DA CAPA', '',
     (capaTop.length ? `<div class="lbl" style="margin-bottom:0">RANKING DE ${MESES[cal.m].toUpperCase()}</div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
     + (ultP ? `<div class="lbl sub-l">ÚLTIMA PARTIDA</div><div class="capaHist">${ultP.map(capaTile).join('')}</div>` : '')
-    + `<div class="g-como">${ABAS.capa.como}</div>`);
+  );
 
   // ---- BIGODINHOS DO MÊS ----
   const cTop = sc('s6', 'trofeu', 'BIGODINHOS DO MÊS', '',
@@ -783,7 +816,13 @@ function renderGeral() {
   const cAtiv = sc('s12', 'cal', `ATIVIDADE · ${MESES[cal.m].toUpperCase()} ${cal.y}`, '',
     `<div class="ativ-in"><div><div class="heat">${heat}</div><div class="heat-leg">MENOS <i></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> MAIS<span style="margin-left:auto">${fmtN(ativ.length)} no mês</span></div></div><div>${listaDia}</div></div>`);
 
-  const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cTop + cAtiv;
+  // ---- COMO PARTICIPAR (rodapé, cor própria) ----
+  const ct = (img, tit, txt) => `<div class="ct">${img ? `<img src="${img}" alt="">` : ''}<div><b>${tit}</b><p>${txt}</p></div></div>`;
+  const cComo = `<section class="sc s12 como-box"><div class="sc-h"><span class="sc-i">${IC.info}</span><span class="sc-t">COMO PARTICIPAR</span><a class="hbtn pri" href="${LIVEPIX}" target="_blank" rel="noopener" style="margin-left:auto">PEDIR PELO LIVEPIX</a></div><div class="cts">`
+    + ct(EMB.dbd, 'DEAD BY DAYLIGHT', ABAS.dbd.como) + ct(EMB.over, 'OVERWATCH', ABAS.over.como) + ct(EMB.deadlock, 'DEADLOCK', ABAS.deadlock.como)
+    + ct('', 'BIGOFLIX', ABAS.flix.como) + ct('', 'CASSINO', ABAS.cassino.como) + ct('', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b> na roleta da live. O desafio que sai na roda é cumprido ao vivo.') + ct('', 'JOGO DA CAPA', ABAS.capa.como)
+    + `</div></section>`;
+  const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cTop + cAtiv + cComo;
   if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; contadores(el); }
 }
 
@@ -856,8 +895,47 @@ function adminGeral() {
 }
 
 
+
+/* ---------- MODO DEMO (?demo): dados inventados só para ver como fica com a live de verdade ---------- */
+function demoDados() {
+  const t = m => new Date(Date.now() - m * 60000).toISOString();
+  const it = (id, e, q, o, b) => ({ id: 'd' + id, escolha: e, quem: q, origem: o || 'doacao', build: !!b });
+  return Object.fromEntries([
+    { id: 'dbd', updated_at: t(0), data: { ativo: true, aberta: true, atual: it(1, 'Trapper', 'lu_bigode', 'doacao', true),
+      fila: [it(2, 'Nurse', 'marcos', 'doacao'), it(3, 'Spirit', 'ana', 'sub', true), it(4, 'Wraith', 'zeca', 'resub'), it(5, 'Huntress', 'pri', 'pontos'), it(6, 'Doctor', 'tiago', 'pontos')],
+      feitos: [it(7, 'Hillbilly', 'bia'), it(8, 'Clown', 'rafa', 'doacao', true)], recusados: [it(9, 'Skull Merchant', 'joao')] } },
+    { id: 'over', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(10, 'Mercy', 'ana'), it(11, 'Reaper', 'zeca')], feitos: [], recusados: [] } },
+    { id: 'deadlock', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(12, 'Haze', 'pri')], feitos: [], recusados: [] } },
+    { id: 'flix', updated_at: t(1), data: { filme: { titulo: 'Robôs', onde: 'Disney+' }, fila: [it(13, 'Toy Story', 'ana'), it(14, 'Coraline', 'zeca'), it(15, 'Shrek', 'marcos')] } },
+    { id: 'roleta', updated_at: t(0), data: { jogo: 'dbd', girando: false, dobro: true, fila: [{ quem: 'ana' }, { quem: 'marcos' }, { quem: 'pri' }],
+      desafios: [{ nome: 'Jogar de olhos fechados', quem: '@tiago', total: 300, inicio: t(1), cumprido: false }, { nome: 'Sem usar habilidade', quem: '@bia', total: 300, inicio: t(30), cumprido: true }] } },
+    { id: 'cassino', updated_at: t(0), data: { jarro: 1450, jarroCheio: 3000, jarroInicial: 500, moeda: 'BIGOCOINS', mesNome: 'novembro', giros: 120,
+      top: [{ nome: 'lu_bigode', liquido: 5400, giros: 30, vitorias: 8 }, { nome: 'zeca', liquido: 3100, giros: 20, vitorias: 5 }, { nome: 'ana', liquido: 900, giros: 9, vitorias: 2 }, { nome: 'pri', liquido: 300, giros: 6, vitorias: 1 }],
+      hall: [{ n: 'zeca', em: t(3000), v: 2650, a: 100 }, { n: 'lu_bigode', em: t(9000), v: 4100, a: 250 }] } }
+  ].map(l => [l.id, l]));
+}
+function demoLinhas() {
+  const out = [], now = new Date(), nomes = ['marcos', 'lu_bigode', 'tiago', 'ana', 'zeca', 'pri'];
+  const esc3 = { dbd: ['Trapper', 'Nurse', 'Spirit', 'Wraith'], over: ['Mercy', 'Reaper', 'Tracer'], deadlock: ['Haze', 'Abrams'], flix: ['Robôs', 'Coraline'] };
+  let sd = 7; const rnd = n => { sd = (sd * 9301 + 49297) % 233280; return Math.floor(sd / 233280 * n); };
+  for (let i = 0; i < 46; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), 1 + rnd(now.getDate()), 14 + rnd(8), rnd(60));
+    if (d > now) continue;
+    const a = ['dbd', 'dbd', 'dbd', 'over', 'deadlock', 'flix'][rnd(6)];
+    out.push({ aba: a, quem: nomes[rnd(6)], escolha: esc3[a][rnd(esc3[a].length)], build: rnd(4) === 0, origem: ['doacao', 'doacao', 'sub', 'pontos'][rnd(4)], feito_em: d.toISOString() });
+  }
+  for (let i = 0; i < 6; i++) { const d = new Date(now.getFullYear(), now.getMonth(), 1 + rnd(now.getDate()), 20, rnd(60)); if (d <= now) out.push({ aba: 'roleta', quem: nomes[rnd(6)], escolha: 'Giro', build: false, origem: '', feito_em: d.toISOString() }); }
+  const jogos = [['1145360', 'Hades'], ['367520', 'Hollow Knight'], ['504230', 'Celeste'], ['413150', 'Stardew Valley']];
+  for (let p = 0; p < 3; p++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), Math.max(1, now.getDate() - p * 2), 21, 10 + p);
+    jogos.forEach((j, r) => out.push({ aba: 'capa', quem: r === 3 ? '' : nomes[rnd(6)], escolha: j[1], id: j[0], partida: 'p' + p, rodada: r + 1, pontos: r === 3 ? 0 : 30 - r * 5, feito_em: new Date(d.getTime() + r * 60000).toISOString() }));
+  }
+  return out.sort((x, y) => new Date(x.feito_em) - new Date(y.feito_em));
+}
+
 /* ---------- BUSCA ---------- */
 async function rpc(fn, body) {
+  if (DEMO) return true;
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
       method: 'POST',
@@ -869,6 +947,7 @@ async function rpc(fn, body) {
 }
 
 async function buscar() {
+  if (DEMO) { dados = demoDados(); if (!aba) aba = 'geral'; render(); return; }
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tracker?select=id,data,updated_at`, { headers: { apikey: SUPABASE_KEY } });
     if (!r.ok) throw new Error(r.status);
@@ -1057,6 +1136,7 @@ document.addEventListener('click', async e => {
 // capa da vez: só o admin vê (o widget grava o estado numa tabela que só abre com a senha)
 let capaId = null;
 async function capaEstado() {
+  if (DEMO) return;
   if (!ADMIN || !senha) return;
   let e = null;
   try {
@@ -1085,6 +1165,13 @@ async function capaEstado() {
 }
 setInterval(capaEstado, 1000);
 
+try { if (localStorage.getItem('trkAdmMin') === '1') $('gAdm').classList.add('min'); } catch (e) {}
+$('admTog').addEventListener('click', () => {
+  const m = $('gAdm').classList.toggle('min');
+  $('admTog').querySelector('span').textContent = m ? 'PAINEL ADMIN · ABRIR' : 'PAINEL ADMIN';
+  try { localStorage.setItem('trkAdmMin', m ? '1' : '0'); } catch (e) {}
+});
+if ($('gAdm').classList.contains('min')) $('admTog').querySelector('span').textContent = 'PAINEL ADMIN · ABRIR';
 document.addEventListener('visibilitychange', ciclo);
 admUI();
 ciclo();
