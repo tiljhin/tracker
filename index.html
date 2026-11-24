@@ -389,6 +389,24 @@ nav button .dot { margin-left: 7px; }
 .lv-dbd{--c:#E5484D!important}.lv-over{--c:#F5A524!important}.lv-dead{--c:#2DD4BF!important}.lv-limpar{--c:#9CA3AF!important;border-style:dashed!important}
 @media(max-width:560px){.sc.st:has(.jar-r){grid-column:span 12}}
 @media(max-width:860px){.adm-grid{grid-template-columns:1fr}.pnrow.lives{grid-template-columns:1fr 1fr}}
+
+/* ---------- ADMIN: ritmo único (mesmo respiro entre linhas, mesma altura em todo botão/campo) ---------- */
+body:has(#gAdm:not([hidden])) header{margin-bottom:0}
+#gAdm:not([hidden]){margin-top:-16px}
+.adm-box .pnrow,.adm-box .rolbtns,.adm-box .capabtns{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.adm-box .pnrow.lives{display:grid}
+.adm-box > :last-child,.adm-box .pnrow:last-child,.adm-box .capabtns:last-of-type{margin-bottom:0}
+.adm-box .lbl{margin:14px 0 8px}
+.adm-box .adm-h + .lbl,.adm-box .adm-h + .pnrow{margin-top:0}
+.adm-box .adm-h{margin-bottom:12px}
+.adm-box button,.adm-box .pnrow input:not([type=checkbox]),.adm-box .capabtns input{box-sizing:border-box;height:40px;min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;font:700 13px/1 Montserrat,sans-serif;letter-spacing:1px;border-radius:8px;white-space:nowrap}
+.adm-box .pnrow input:not([type=checkbox]){font-weight:500;letter-spacing:0;justify-content:flex-start;padding:0 12px}
+.adm-box .capabtns input{width:112px;justify-content:center;padding:0 8px}
+.adm-box .pnrow.lives button{height:54px;min-height:54px;flex-direction:column;padding:0 8px;font-weight:800}
+.adm-box .pnrow.lives button.on::after{margin-top:4px}
+.adm-box label{height:40px}
+.adm-box .rol-msg{min-height:0;margin:8px 0 0}
+.adm-box .rol-msg:empty{display:none}
 </style>
 <link rel="icon" href="icone.png">
 </head>
