@@ -483,6 +483,13 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .vip-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}.vip-top .vip-k{margin:0}
 .vip-r li{gap:10px}
 .agora > img.ret{width:104px;height:104px;object-fit:cover;object-position:50% 20%;border-radius:16px;border:1px solid var(--cor);filter:none;box-shadow:0 0 22px rgba(227,80,42,.35),inset 0 0 0 1px rgba(0,0,0,.4);background:#120A07}
+.sc-i:has(.icx){width:40px;height:40px;background:none;border:0;border-radius:0;margin:-6px 0}
+.icx{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(227,80,42,.35))}
+.st .sc-i:has(.icx){width:44px;height:44px;margin:-8px 0}
+.vip-k{display:flex;align-items:center;gap:6px}.vip-k .vk{width:22px;height:22px;flex:none}
+.ct img{width:46px;height:46px}
+header{margin-bottom:16px}
+body:not(:has(#gAdm:not([hidden]))) .status:has(#pill[hidden]){display:none}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -740,6 +747,9 @@ const IC = {
   check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
 };
 
+const ICX = n => `<img class="icx" src="ic-${n}.webp" alt="">`;
+Object.assign(IC, { film: ICX('flix'), coin: ICX('ficha'), roleta: ICX('roleta'), capa: ICX('capa'), cal: ICX('cal'), trofeu: ICX('coroa'), list: ICX('fila'), check: ICX('feitos'), jarro: ICX('jarro'), giros: ICX('giros') });
+
 const onlineAba = k => { const l = dados[k]; return !!(l && temDado(l.data) && l.updated_at && (Date.now() - new Date(l.updated_at)) / 60000 <= OFFLINE_MIN); };
 let geralHtml = '';
 
@@ -812,12 +822,12 @@ function renderGeral() {
   const base = Number(cd.jarroInicial) >= 0 && cd.jarroInicial !== undefined ? Number(cd.jarroInicial) : 500;   // brinde inicial do jarro: não conta como "enchido"
   const jvPct = Math.max(0, jv - base), jcheio = Math.max(1, cheio - base);
   const jarT = cd.jarro !== undefined
-    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.coin}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div></div></div></section>`
-    : stat('coin', 'JARRO DO CASSINO', '—', 'cassino sem dados');
+    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.jarro}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div></div></div></section>`
+    : stat('jarro', 'JARRO DO CASSINO', '—', 'cassino sem dados');
   const stats = stat('check', 'FEITOS NO MÊS', feitos.length, 'pedidos atendidos em ' + MESES[cal.m], 'feitos')
     + stat('list', 'NA FILA AGORA', noAr ? fila.length : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento', 'fila')
     + jarT
-    + stat('roleta', 'GIROS NA ROLETA', rOn ? rFila.length : '—', rOn ? (rd.girando ? 'girando agora' : 'aguardando giro') : 'roleta offline', 'giros');
+    + stat('giros', 'GIROS NA ROLETA', rOn ? rFila.length : '—', rOn ? (rd.girando ? 'girando agora' : 'aguardando giro') : 'roleta offline', 'giros');
 
   // ---- AGORA NA LIVE ----
   const atual = noAr ? d.atual : null;
@@ -894,7 +904,7 @@ function renderGeral() {
   const det = o => [o.ped && plural(o.ped, 'pedido', 'pedidos'), o.sub && plural(o.sub, 'sub', 'subs'), o.giro && plural(o.giro, 'giro', 'giros'), o.capa && plural(o.capa, 'acerto', 'acertos'), o.cass && plural(o.cass, 'giro no cassino', 'giros no cassino')].filter(Boolean).join(' · ');
   const cTop = sc('s12', 'trofeu', verAno ? 'BIGODINHOS DO ANO' : 'BIGODINHOS DO MÊS', '',
     rk.length
-      ? `<div class="vip"><div class="vip-l"><div class="vip-top">${avatar(rk[0].n, 'lg')}<div class="vip-k">👑 ${verAno ? 'BIGODINHO DO ANO · ' + hojeD.getFullYear() : 'VIP DO MÊS · ' + MESES[cal.m].toUpperCase()}</div></div><div class="vip-n">${esc(rk[0].n)}</div><div class="vip-p"><b data-cid="vip" data-cnt="${rk[0].pts}">${fmtN(rk[0].pts)}</b> pontos</div><div class="vip-d">${det(rk[0])}</div></div>
+      ? `<div class="vip"><div class="vip-l"><div class="vip-top">${avatar(rk[0].n, 'lg')}<div class="vip-k"><img class="icx vk" src="ic-coroa.webp" alt=""> ${verAno ? 'BIGODINHO DO ANO · ' + hojeD.getFullYear() : 'VIP DO MÊS · ' + MESES[cal.m].toUpperCase()}</div></div><div class="vip-n">${esc(rk[0].n)}</div><div class="vip-p"><b data-cid="vip" data-cnt="${rk[0].pts}">${fmtN(rk[0].pts)}</b> pontos</div><div class="vip-d">${det(rk[0])}</div></div>
           <div class="vip-r">${rk.length > 1 ? rank(rk.slice(1), p => `${avatar(p.n, 'sm')}<div class="nm">${esc(p.n)}<small>${det(p)}</small></div><b class="val">${fmtN(p.pts)} pts</b>`).replace('<ol>', '<ol start="2">').replace(/<span class="n(?: ouro| pod)?">(\d+)<\/span>/g, (m, d) => `<span class="n${+d + 1 <= 3 ? ' pod' : ''}">${+d + 1}</span>`) : ''}</div></div>
          <div class="regra">COMO SOMA: pedido atendido ${PESO.ped} · sub/resub/gift +${PESO.sub} · giro na roleta ${PESO.giro} · acerto na capa ${PESO.capa} · giro no cassino ${PESO.cass}${verAno ? ' (no ano o cassino não entra: o ranking dele zera todo mês)' : ''}${verAno && PREMIO_ANO ? `<br>🎁 PRÊMIO DO ANO: ${esc(PREMIO_ANO)}` : ''}</div>`
       : vazio(verAno && !ano.linhas ? 'Carregando o ano…' : 'Ninguém pontuou ainda. Pede, gira, joga: tudo soma!'),
@@ -939,10 +949,10 @@ function renderGeral() {
     + ct(EMB.dbd, 'DBD', 'Pix com o <b>nome do killer</b>. <b>R$ 1</b> escolhe, <b>R$ 2</b> com build.')
     + ct(EMB.over, 'OVERWATCH', 'Pix com o <b>nome do herói</b>. <b>R$ 1</b> escolhe.')
     + ct(EMB.deadlock, 'DEADLOCK', 'Pix com o <b>nome do herói</b>. <b>R$ 1</b> escolhe.')
-    + ct('', 'BIGOFLIX', 'Pix de <b>R$ 15</b> com <b>filme</b> e o nome.')
-    + ct('', 'CASSINO', '<b>!cassino</b> no chat e aposte BIGOCOINS. 7 com bigode leva o jarro.')
-    + ct('', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b>.')
-    + ct('', 'CAPA', 'Digite o <b>nome do jogo</b> no chat, sem comando.')
+    + ct('ic-flix.webp', 'BIGOFLIX', 'Pix de <b>R$ 15</b> com <b>filme</b> e o nome.')
+    + ct('ic-ficha.webp', 'CASSINO', '<b>!cassino</b> no chat e aposte BIGOCOINS. 7 com bigode leva o jarro.')
+    + ct('ic-roleta.webp', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b>.')
+    + ct('ic-capa.webp', 'JOGO DA CAPA', 'Digite o <b>nome do jogo</b> no chat, sem comando.')
     + `</div></section>`;
   const html = hero + cTop + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cAtiv + cComo;   // ordem: destaque do mês → números → ao vivo → extras → histórico → como participar
   if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; contadores(el); }
