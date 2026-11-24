@@ -135,7 +135,7 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .capabtns button { cursor: pointer; }
 .capabtns button:hover { border-color: var(--cor); }
 .capabtns button[data-capa="iniciar"] { background: var(--cor); border-color: var(--cor); color: #0B0604; }
-.capabtns input { width: 74px; text-align: center; }
+.capabtns input { width: 112px; text-align: center; padding-left: 8px; padding-right: 8px; }
 
 
 .capaVez { display: flex; gap: 14px; align-items: center; margin: 4px 0 12px; }
@@ -375,6 +375,7 @@ nav button .dot { margin-left: 7px; }
 /* ---------- ÁREA ADMIN (índigo, bem diferente do resto) ---------- */
 .adm-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-bottom:16px}
 .adm-grid[hidden]{display:none}
+.adm-col{display:flex;flex-direction:column;gap:14px;min-width:0}
 .adm-side{display:flex;flex-direction:column;gap:14px}
 .adm-box{--cor:#6F7FE8;--line:#2B3560;--card:#10152A;--card2:#181F3B;--ouro:#9AA8F5;--txt:#DDE2FF;--mut:#8D96BF;--cl:#C9D0FF;background:linear-gradient(180deg,#141A33,#0E1226);border:1px solid #3A4580;border-top:3px solid #6F7FE8;box-shadow:0 0 28px rgba(111,127,232,.12);color:var(--txt)}
 .adm-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
@@ -407,7 +408,7 @@ nav button .dot { margin-left: 7px; }
 
   <!-- ADMIN: só aparece com ?admin + senha. Cor própria (índigo) pra você saber que é daqui que manda -->
   <div id="gAdm" class="adm-grid" hidden>
-    <div id="gAdmMain"></div>
+    <div class="adm-col"><div id="gAdmMain"></div><div id="gAdmFlix"></div></div>
     <div class="adm-side">
       <div id="gAdmRol"></div>
       <div id="capaCtl" class="card adm-box" hidden>
@@ -417,6 +418,8 @@ nav button .dot { margin-left: 7px; }
         <div class="capabtns">
           <input id="capaN" type="number" min="1" max="30" placeholder="rodadas" title="Rodadas (vazio = padrão do widget)">
           <button data-capa="iniciar">▶ INICIAR</button>
+        </div>
+        <div class="capabtns">
           <button data-capa="pular">⏭ PULAR</button>
           <button data-capa="parar">■ PARAR</button>
           <button data-capa="ranking">🏆 RANKING</button>
@@ -662,8 +665,10 @@ function renderGeral() {
   // ---- números em destaque ----
   const stat = (ic, lb, val, sb, cid) => { const n = typeof val === 'number'; return `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">${lb}</span><span class="sc-i">${IC[ic]}</span></div><div class="g-num"${n ? ` data-cid="${cid}" data-cnt="${val}"` : ''}>${n ? fmtN(val) : val}</div><div class="g-sub">${sb}</div></section>`; };
   const cheio = Number(cd.jarroCheio) > 0 ? Number(cd.jarroCheio) : 3000, jv = Number(cd.jarro) || 0;
+  const base = Number(cd.jarroInicial) >= 0 && cd.jarroInicial !== undefined ? Number(cd.jarroInicial) : 500;   // brinde inicial do jarro: não conta como "enchido"
+  const jvPct = Math.max(0, jv - base), jcheio = Math.max(1, cheio - base);
   const jarT = cd.jarro !== undefined
-    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.coin}</span></div><div class="jar-r">${pote(jv, cheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jv / cheio * 100))}% do pote</div></div></div></section>`
+    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.coin}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div></div></div></section>`
     : stat('coin', 'JARRO DO CASSINO', '—', 'cassino sem dados');
   const stats = stat('check', 'FEITOS NO MÊS', feitos.length, 'pedidos atendidos em ' + MESES[cal.m], 'feitos')
     + stat('list', 'NA FILA AGORA', noAr ? fila.length : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento', 'fila')
@@ -805,7 +810,7 @@ function adminGeral() {
   const on = ADMIN && !!senha;
   box.hidden = !on;
   $('capaCtl').hidden = !on;
-  if (!on) { $('gAdmMain').innerHTML = ''; $('gAdmRol').innerHTML = ''; gAdmKey = ''; return; }
+  if (!on) { $('gAdmMain').innerHTML = ''; $('gAdmFlix').innerHTML = ''; $('gAdmRol').innerHTML = ''; gAdmKey = ''; return; }
   const ativoK = JOGOS.find(k => dados[k]?.data?.ativo === true);
   const aberta = (dados[ativoK || 'dbd']?.data || {}).aberta !== false;
   const key = (ativoK || '-') + aberta;
@@ -819,7 +824,9 @@ function adminGeral() {
     <div class="lbl">FILA DA LIVE${ativoK ? ' · ' + NOMES[ativoK].toUpperCase() : ''}</div>
     <div class="pnrow">${b('PRÓXIMO', '!prox', 1)}${b('PULAR', '!pular')}${b(aberta ? 'FECHAR FILA' : 'ABRIR FILA', aberta ? '!fila fechar' : '!fila abrir')}${b('ESCONDER HUD', '!fila esconder')}${b('MOSTRAR HUD', '!fila mostrar')}</div>
     <div class="pnrow"><input id="gUser" placeholder="@usuário"><input id="gPick" placeholder="killer / herói"><label><input type="checkbox" id="gBuild"> build</label><button class="pri gb" id="gAdd">ADICIONAR</button></div>
-    <div class="lbl">BIGOFLIX</div>
+  </section>`;
+  $('gAdmFlix').innerHTML = `<section class="sc pnl adm-box">
+    <div class="adm-h"><span class="adm-tag">ADMIN</span><span class="sc-t">BIGOFLIX</span></div>
     <div class="pnrow"><input id="gfFilme" placeholder="filme da semana"><input id="gfOnde" placeholder="onde (Prime Video…)"><button class="pri gb" id="gfSet">DEFINIR FILME</button>${b('TIRAR FILME', '!filme off')}</div>
     <div class="pnrow"><input id="gfUser" placeholder="@usuário"><input id="gfTit" placeholder="filme pedido"><button class="pri gb" id="gfAdd">ADICIONAR PEDIDO</button><button data-cmd="!limparfilmes" data-conf="Zerar a fila de filmes, os feitos e os recusados?">LIMPAR FILMES</button></div>
   </section>`;
