@@ -930,7 +930,7 @@ function renderGeral() {
     + ct('', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b>.')
     + ct('', 'CAPA', 'Digite o <b>nome do jogo</b> no chat, sem comando.')
     + `</div></section>`;
-  const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cTop + cAtiv + cComo;
+  const html = hero + cTop + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cAtiv + cComo;   // ordem: destaque do mês → números → ao vivo → extras → histórico → como participar
   if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; contadores(el); }
 }
 
