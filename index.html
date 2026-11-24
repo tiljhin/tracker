@@ -140,6 +140,12 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .capaVez .nm { font: 700 18px 'Montserrat', sans-serif; color: var(--txt); }
 .capaVez small { display: block; margin-top: 4px; font-size: 12px; color: var(--mut); letter-spacing: 1px; }
 
+.capaSeq { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 12px; padding-bottom: 4px; }
+.capaSeq div { flex: 0 0 62px; text-align: center; font-size: 10px; color: var(--mut); opacity: .6; }
+.capaSeq div.at { opacity: 1; color: var(--txt); }
+.capaSeq div.at img { border-color: var(--cor); }
+.capaSeq img { display: block; width: 62px; height: 93px; object-fit: contain; background: #0B0604; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 3px; }
+.capaSeq span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* selo no topo, à direita (em cima do BIGOFLIX): 🔒 deslogado · ● ADMIN logado */
 .adm-badge {
   position: absolute; top: 0; right: 0;
@@ -245,6 +251,7 @@ footer { position: relative; z-index: 1; }
   <div id="capaCtl" class="card" hidden>
     <div class="lbl">JOGO DA CAPA</div>
     <div class="capaVez" id="capaVez" hidden><img id="capaImg" alt=""><div><div class="nm" id="capaNome"></div><small id="capaInfo"></small></div></div>
+    <div class="capaSeq" id="capaSeq" hidden></div>
     <div class="capabtns">
       <input id="capaN" type="number" min="1" max="30" placeholder="rodadas" title="Rodadas (vazio = padrão do widget)">
       <button data-capa="iniciar">▶ INICIAR</button>
@@ -887,6 +894,13 @@ async function capaEstado() {
     if (r.ok) e = await r.json();
   } catch (x) {}
   const box = $('capaVez');
+  const sq = $('capaSeq');
+  const chave = e && e.seq ? e.seq.map(x => x.id).join(',') + '|' + e.n : '';
+  if (sq.dataset.k !== chave) {
+    sq.dataset.k = chave;
+    sq.hidden = !(e && e.seq && e.seq.length);
+    sq.innerHTML = (e && e.seq || []).map((x, i) => `<div class="${i + 1 === e.n ? 'at' : ''}"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${x.id}/library_600x900.jpg" onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${x.id}/header.jpg'" alt=""><span>${i + 1}. ${esc(x.n)}</span></div>`).join('');
+  }
   if (!e || !e.jogo) { box.hidden = true; $('capaInfo').textContent = ''; return; }
   box.hidden = false;
   $('capaNome').textContent = e.jogo;
@@ -899,7 +913,7 @@ async function capaEstado() {
     im.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/library_600x900.jpg`;
   }
 }
-setInterval(capaEstado, 2000);
+setInterval(capaEstado, 1000);
 
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
