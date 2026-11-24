@@ -37,7 +37,7 @@ nav button {
   padding: 12px 12px; border-radius: 12px; cursor: pointer; transition: all .2s; white-space: nowrap;
 }
 nav button:hover { color: var(--txt); }
-@media (max-width: 560px) { nav { gap: 5px; } nav button { flex: 1 1 22%; font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
+@media (max-width: 560px) { nav { gap: 5px; } nav button { flex: 1 1 28%; font-size: 12px; letter-spacing: .5px; padding: 12px 2px; } }
 nav button .ico { display: inline-grid; place-items: center; color: var(--ouro); }
 nav button .ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 nav button.on .ico { color: var(--cl); }
@@ -50,7 +50,7 @@ nav button .emb { width: 24px; height: 24px; margin-right: 7px; vertical-align: 
 @media (max-width: 560px) { .jogologo { position: static; transform: none; order: 2; width: 100%; text-align: center; } .status { flex-wrap: wrap; } }
 .jogologo img { height: 36px; max-width: 86%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(227,80,42,.35)); opacity: .95; }
 .jogologo img.deadlock { height: 50px; }   /* a logo do Deadlock é empilhada (olho em cima, nome embaixo): precisa de mais altura pra ficar legível */
-nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
+#subtabs button .dot, nav button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--cor); box-shadow: 0 0 8px var(--cor); }
 
 .status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--mut); }
 .pill { padding: 5px 12px; border-radius: 99px; font-weight: 700; font-size: 13px; letter-spacing: .5px; border: 1px solid var(--line); background: var(--card); }
@@ -245,7 +245,7 @@ footer { position: relative; z-index: 1; }
 .sc::before { content: ''; position: absolute; left: 18px; right: 18px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--ouro), transparent); opacity: .5; }
 .sc::after { content: ''; position: absolute; right: -50px; bottom: -50px; width: 160px; height: 160px; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--cor) 14%, transparent), transparent 70%); }
 .sc > * { position: relative; z-index: 1; }
-.s12 { grid-column: span 12; } .s7 { grid-column: span 7; } .s6 { grid-column: span 6; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; }
+/* spans */ .s8 { grid-column: span 8; } .s12 { grid-column: span 12; } .s7 { grid-column: span 7; } .s6 { grid-column: span 6; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; }
 .sc-h { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
 .sc-i { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: var(--ouro); background: color-mix(in srgb, var(--cor) 16%, var(--card)); border: 1px solid color-mix(in srgb, var(--cor) 32%, var(--line)); }
 .sc-i svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -328,7 +328,7 @@ footer { position: relative; z-index: 1; }
 .como-t > span em { font-style: normal; color: var(--txt); font-weight: 700; }
 
 @media (max-width: 900px) {
-  .s3, .s4 { grid-column: span 6; } .s5, .s7 { grid-column: span 12; }
+  .s3, .s4 { grid-column: span 6; } .s5, .s7, .s8 { grid-column: span 12; }
   .hero { flex-direction: column; align-items: flex-start; } .hero-side { flex-direction: row; align-items: center; width: 100%; }
 }
 @media (max-width: 560px) {
@@ -336,6 +336,26 @@ footer { position: relative; z-index: 1; }
   .hero { padding: 20px 18px; } .hero h2 { font-size: 26px; } .g-num { font-size: 34px; }
 }
 @media (prefers-reduced-motion: reduce) { .sc-chip.ok .ldot { animation: none; } .como-t:hover { transform: none; } }
+
+/* ---------- 3 grupos de abas + subabas (24/11/2026) ---------- */
+#subtabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: -6px 0 18px; }
+#subtabs button { display: inline-flex; align-items: center; gap: 7px; background: color-mix(in srgb, var(--card) 80%, transparent); border: 1px solid var(--line); color: var(--mut); font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1px; padding: 8px 15px; border-radius: 99px; cursor: pointer; transition: all .2s; white-space: nowrap; }
+#subtabs button:hover { color: var(--txt); }
+#subtabs button.on { color: var(--cl); border-color: var(--cor); background: color-mix(in srgb, var(--cor) 22%, var(--card)); box-shadow: 0 0 14px color-mix(in srgb, var(--cor) 30%, transparent); }
+#subtabs .emb { width: 18px; height: 18px; }
+nav button .dot { margin-left: 7px; }
+/* jarro funcional nos numeros em destaque + admin na GERAL */
+.st { display: flex; flex-direction: column; justify-content: space-between; }
+.jar-r { display: flex; align-items: center; gap: 14px; }
+.jar-r .pote { flex: 0 0 92px; }
+.jar-r .g-num { font-size: 36px; }
+.g-adm { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.g-msg { margin-left: auto; font-size: 12px; color: var(--mut); }
+#gAdm { margin-bottom: 14px; }
+.sc ol li .nm { min-width: 150px; }
+.sc ol li .adm, .sc ol li .adm2 { order: 3; }
+#gAdm .lbl { margin-top: 12px; }
+#gAdm .sc-h + .lbl { margin-top: 0; }
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -352,15 +372,11 @@ footer { position: relative; z-index: 1; }
   </header>
 
   <nav id="tabs">
-    <button data-aba="geral" data-nome="GERAL">GERAL</button>
-    <button data-aba="dbd" data-nome="DBD">DBD</button>
-    <button data-aba="over" data-nome="OVER">OVER</button>
-    <button data-aba="deadlock" data-nome="DEADLOCK">DEADLOCK</button>
-    <button data-aba="flix" data-nome="BIGOFLIX">BIGOFLIX</button>
-    <button data-aba="roleta" data-nome="ROLETA">ROLETA</button>
-    <button data-aba="cassino" data-nome="CASSINO">CASSINO</button>
-    <button data-aba="capa" data-nome="CAPA">CAPA</button>
+    <button data-g="geral" data-ic="grid" data-nome="GERAL">GERAL</button>
+    <button data-g="fila" data-ic="list" data-nome="FILAS">FILAS</button>
+    <button data-g="jogos" data-ic="coin" data-nome="JOGOS">JOGOS</button>
   </nav>
+  <div id="subtabs" hidden></div>
 
   <div class="status" id="statusRow">
     <span id="pill" class="pill">carregando…</span>
@@ -386,6 +402,8 @@ footer { position: relative; z-index: 1; }
   <div id="topo"></div>
 
   <div id="painel"></div>
+
+  <div id="gAdm" hidden></div>
 
   <div id="geral" hidden></div>
 
@@ -775,13 +793,21 @@ const IC = {
   check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
 };
 
-function abas() {   // abas: pontinho lava no jogo que está ativo na live
+const GRUPOS = { geral: ['geral'], fila: ['dbd', 'over', 'deadlock', 'flix'], jogos: ['cassino', 'roleta', 'capa'] };
+const NOMEAB = { dbd: 'DBD', over: 'OVER', deadlock: 'DEADLOCK', flix: 'BIGOFLIX', cassino: 'CASSINO', roleta: 'ROLETA', capa: 'CAPA' };
+const grupoDe = k => Object.keys(GRUPOS).find(g => GRUPOS[g].includes(k));
+const ultimo = {};   // última subaba aberta em cada grupo
+
+function abas() {   // 3 abas principais + subabas (pontinho lava no jogo que está ativo na live)
+  const g = grupoDe(aba); ultimo[g] = aba;
+  const viva = JOGOS.some(k => dados[k]?.data?.ativo === true);
   document.querySelectorAll('#tabs button').forEach(b => {
-    const k = b.dataset.aba;
-    b.classList.toggle('on', k === aba);
-    const ativo = JOGOS.includes(k) && dados[k]?.data?.ativo === true;
-    b.innerHTML = (k === 'geral' ? `<span class="emb ico">${IC.grid}</span>` : (EMB[k] ? `<img class="emb" src="${EMB[k]}" alt="">` : '')) + b.dataset.nome + (ativo ? '<span class="dot"></span>' : '');
+    b.classList.toggle('on', b.dataset.g === g);
+    b.innerHTML = `<span class="emb ico">${IC[b.dataset.ic]}</span>` + b.dataset.nome + (b.dataset.g === 'fila' && viva ? '<span class="dot"></span>' : '');
   });
+  const sub = $('subtabs'), lst = GRUPOS[g];
+  sub.hidden = lst.length < 2;
+  sub.innerHTML = lst.length < 2 ? '' : lst.map(k => `<button data-aba="${k}" class="${k === aba ? 'on' : ''}">${EMB[k] ? `<img class="emb" src="${EMB[k]}" alt="">` : ''}${NOMEAB[k]}${JOGOS.includes(k) && dados[k]?.data?.ativo === true ? '<span class="dot"></span>' : ''}</button>`).join('');
 }
 
 function irAba(k) {
@@ -861,44 +887,47 @@ function renderGeral() {
     </section>`;
 
   // ---- números em destaque ----
-  const stat = (ic, lb, val, sb) => `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">${lb}</span><span class="sc-i">${IC[ic]}</span></div><div class="g-num">${val}</div><div class="g-sub">${sb}</div></section>`;
-  const stats = stat('check', 'FEITOS NO MÊS', fmtN(feitos.length), 'pedidos atendidos em ' + MESES[cal.m])
-    + stat('list', 'NA FILA AGORA', noAr ? fmtN(fila.length) : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento')
-    + stat('coin', 'JARRO DO CASSINO', cd.jarro !== undefined && cOn ? fmtN(cd.jarro) : '—', moeda)
-    + stat('roleta', 'GIROS NA ROLETA', rOn ? fmtN(rFila.length) : '—', rOn ? (rd.girando ? 'girando agora' : 'aguardando giro') : 'roleta offline');
+  const stat = (ic, lb, val, sb, cid) => { const n = typeof val === 'number'; return `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">${lb}</span><span class="sc-i">${IC[ic]}</span></div><div class="g-num"${n ? ` data-cid="${cid}" data-cnt="${val}"` : ''}>${n ? fmtN(val) : val}</div><div class="g-sub">${sb}</div></section>`; };
+  const cheio = Number(cd.jarroCheio) > 0 ? Number(cd.jarroCheio) : 3000, jv = Number(cd.jarro) || 0;
+  const jarT = cd.jarro !== undefined
+    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.coin}</span></div><div class="jar-r">${pote(jv, cheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jv / cheio * 100))}% do pote</div></div></div></section>`
+    : stat('coin', 'JARRO DO CASSINO', '—', 'cassino sem dados');
+  const stats = stat('check', 'FEITOS NO MÊS', feitos.length, 'pedidos atendidos em ' + MESES[cal.m], 'feitos')
+    + stat('list', 'NA FILA AGORA', noAr ? fila.length : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento', 'fila')
+    + jarT
+    + stat('roleta', 'GIROS NA ROLETA', rOn ? rFila.length : '—', rOn ? (rd.girando ? 'girando agora' : 'aguardando giro') : 'roleta offline', 'giros');
 
   // ---- AGORA NA LIVE ----
   const atual = noAr ? d.atual : null;
+  const admOn = ADMIN && !!senha;
+  const admAtual = atual && admOn && (botoes(atual, true) + topoBtn()) ? `<div class="g-adm">${botoes(atual, true)}${topoBtn()}</div>` : '';
   const agoraC = noAr
     ? (atual
-      ? `<div class="agora"><img src="emb-${k}.webp" alt=""><div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>`
+      ? `<div class="agora"><img src="emb-${k}.webp" alt=""><div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
   const cAgora = sc('s5', 'live', 'AGORA NA LIVE', noAr ? k : 'dbd', agoraC + (noAr ? `<div class="g-como">${ABAS[k].como}</div>` : ''), noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
 
   // ---- PRÓXIMOS NA FILA ----
-  const cFila = sc('s4', 'list', 'PRÓXIMOS NA FILA', noAr ? k : 'dbd',
-    fila.length ? rank(fila.slice(0, 5), p => `<div class="nm">${esc(p.escolha)}${tags(p)}<small>${esc(p.quem)}</small></div>`) + (fila.length > 5 ? `<div class="g-mais">+ ${fila.length - 5} NA FILA</div>` : '')
+  const cFila = sc(admOn ? 's7' : 's4', 'list', 'PRÓXIMOS NA FILA', noAr ? k : 'dbd',
+    fila.length ? (admOn ? `<ol>${fila.map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}${tags(p)}<small>${esc(p.quem)}</small></div>${botoes(p)}${posBtns(i)}</li>`).join('')}</ol>` : rank(fila.slice(0, 5), p => `<div class="nm">${esc(p.escolha)}${tags(p)}<small>${esc(p.quem)}</small></div>`) + (fila.length > 5 ? `<div class="g-mais">+ ${fila.length - 5} NA FILA</div>` : ''))
     : vazio(noAr ? ABAS[k].vazio : 'Sem live no momento.'));
 
   // ---- BIGOFLIX ----
   const fm = fxOn ? fx.filme : null;
-  const cFlix = sc('s3', 'film', 'BIGOFLIX', 'flix',
+  const cFlix = sc(admOn ? 's4' : 's3', 'film', 'BIGOFLIX', 'flix',
     (fm ? `<div class="lbl">FILME DA SEMANA</div><div class="big" style="font-size:20px">${esc(fm.titulo)}</div><div class="who">${esc(fm.onde || (fm.quem ? 'pedido de ' + fm.quem : ''))}</div>` : vazio('Nenhum filme da semana definido.'))
     + (filmes.length ? `<div class="g-mais">${filmes.length} ${filmes.length === 1 ? 'PEDIDO' : 'PEDIDOS'} NA FILA</div>` : '')
     + `<div class="g-como">${ABAS.flix.como}</div>`);
 
   // ---- CASSINO ----
-  const lider = ctop[0];
   const cCass = sc('s5', 'coin', 'CASSINO', 'cassino',
-    (cOn && cd.jarro !== undefined
-      ? `<div class="potecard">${pote(cd.jarro, cd.jarroCheio)}<div class="potetxt"><div class="lbl">JARRO DO JACKPOT</div><div class="big jar">${fmtN(cd.jarro)}<span class="moeda">${moeda}</span></div><div class="who">7-7-7 leva o jarro inteiro</div></div></div>`
-      : vazio('O cassino abre junto com a live. Digite !cassino no chat.'))
-    + (ctop.length ? `<div class="lbl g-sep">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome) : ' DO MÊS'}</div>` + rank(ctop.slice(0, 3), p => `<div class="nm">${esc(p.nome)}</div><b class="val">+${fmtN(p.liquido)}</b>`) : ''));
+    (ctop.length ? `<div class="lbl" style="margin-bottom:0">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio('Ninguém no lucro este mês ainda. Seja o primeiro!'))
+    + `<div class="g-como">${ABAS.cassino.como}</div>`);
 
   // ---- ROLETA ----
   const cRol = sc('s3', 'roleta', 'ROLETA', 'roleta',
-    rOn ? `<div class="g-num">${fmtN(rFila.length)}</div><div class="g-sub">${rFila.length === 1 ? 'giro na fila' : 'giros na fila'}${rd.dobro ? ' · doação vale em dobro' : ''}</div>`
+    rOn ? `<div class="g-num" data-cid="rol" data-cnt="${rFila.length}">${fmtN(rFila.length)}</div><div class="g-sub">${rFila.length === 1 ? 'giro na fila' : 'giros na fila'}${rd.dobro ? ' · doação vale em dobro' : ''}</div>`
         + (rAt ? `<div class="g-mais">${rAt.cumprido ? 'DESAFIO CUMPRIDO' : (rAt.inicio ? 'DESAFIO EM ANDAMENTO' : 'DESAFIO AGUARDANDO')}<div class="who" style="letter-spacing:0;font-weight:600;margin-top:4px;color:var(--txt)">${esc(rAt.nome)}</div></div>` : '')
         : vazio('Roleta offline. Doações viram giros quando a live abre.'));
 
@@ -916,11 +945,11 @@ function renderGeral() {
     const n = porDia[dd] || 0, nv = n ? 1 + Math.min(3, Math.floor(n / max * 3.999)) : 0;
     heat += `<div class="hc${nv ? ' h' + nv : ''}${ehMes && dd === hojeD.getDate() ? ' hoje' : ''}" title="${n} em ${pad(dd)}/${pad(cal.m + 1)}">${dd}</div>`;
   }
-  const cAtiv = sc('s7', 'cal', `ATIVIDADE · ${MESES[cal.m].toUpperCase()} ${cal.y}`, '',
+  const cAtiv = sc(admOn ? 's8' : 's7', 'cal', `ATIVIDADE · ${MESES[cal.m].toUpperCase()} ${cal.y}`, '',
     `<div class="heat">${heat}</div><div class="heat-leg">MENOS <i></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> MAIS<span style="margin-left:auto">${fmtN(ativ.length)} no mês</span></div>`);
 
   // ---- MAIS ATIVOS ----
-  const cTop = sc('s5', 'trofeu', 'BIGODINHOS DO MÊS', '',
+  const cTop = sc(admOn ? 's12' : 's5', 'trofeu', 'BIGODINHOS DO MÊS', '',
     ativos.length ? `<div class="lbl" style="margin-bottom:0">QUEM MAIS PEDIU</div>` + rank(ativos, p => `<div class="nm">${esc(p.n)}</div><b class="val">${plural(p.c, 'pedido', 'pedidos')}</b>`)
     : vazio('Ninguém teve pedido atendido neste mês ainda. Pede o seu!'));
 
@@ -935,7 +964,54 @@ function renderGeral() {
     + `</div>`);
 
   const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cAtiv + cTop + cComo;
-  if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; }
+  if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; contadores(el); }
+}
+
+
+/* contadores animados: sobem do valor anterior até o novo (sem animar se "reduzir movimento" estiver ligado) */
+const cntPrev = {};
+function contadores(root) {
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.querySelectorAll('[data-cnt]').forEach(el => {
+    const id = el.dataset.cid, to = Number(el.dataset.cnt), from = cntPrev[id] ?? 0;
+    cntPrev[id] = to;
+    if (from === to || calmo) { el.textContent = fmtN(to); return; }
+    const t0 = performance.now(), dur = 1000;
+    el.textContent = fmtN(from);
+    const passo = t => {
+      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmtN(Math.round(from + (to - from) * e));
+      if (k < 1 && el.isConnected) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  });
+}
+
+/* COMANDO ADMIN (só com ?admin + senha): tudo o que antes ficava espalhado nas abas, agora na GERAL */
+let gAdmKey = '';
+function adminGeral() {
+  const el = $('gAdm');
+  if (!(ADMIN && senha) || aba !== 'geral') { el.hidden = true; el.innerHTML = ''; gAdmKey = ''; return; }
+  el.hidden = false;
+  const ativoK = JOGOS.find(k => dados[k]?.data?.ativo === true);
+  const aberta = (dados[ativoK || 'dbd']?.data || {}).aberta !== false;
+  const key = (ativoK || '-') + aberta;
+  if (key === gAdmKey) return;   // não refaz a cada 2 s, senão apaga o que você está digitando
+  gAdmKey = key;
+  const b = (txt, cmd, pri) => `<button data-cmd="${esc(cmd)}"${pri ? ' class="pri"' : ''}>${txt}</button>`;
+  el.innerHTML = `<section class="sc pnl">
+    <div class="sc-h"><span class="sc-i">${IC.info}</span><span class="sc-t">COMANDO ADMIN</span><span class="g-msg" id="pnMsg"></span></div>
+    <div class="lbl">FILA DA LIVE${ativoK ? ' · ' + NOMES[ativoK].toUpperCase() : ''}</div>
+    <div class="pnrow">${b('PRÓXIMO', '!prox', 1)}${b('PULAR', '!pular')}${b(aberta ? 'FECHAR FILA' : 'ABRIR FILA', aberta ? '!fila fechar' : '!fila abrir')}${b('ESCONDER HUD', '!fila esconder')}${b('MOSTRAR HUD', '!fila mostrar')}</div>
+    <div class="pnrow">${b('LIVE: DBD', '!ctadbd')}${b('LIVE: OVERWATCH', '!ctaover')}${b('LIVE: DEADLOCK', '!ctadeadlock')}<button data-cmd="!limparfila" data-conf="Zerar a fila, o AGORA, os feitos e os recusados da live?">LIMPAR FILA</button></div>
+    <div class="pnrow"><input id="gUser" placeholder="@usuário"><input id="gPick" placeholder="killer / herói"><label><input type="checkbox" id="gBuild"> build</label><button class="pri gb" id="gAdd">ADICIONAR</button></div>
+    <div class="lbl">BIGOFLIX</div>
+    <div class="pnrow"><input id="gfFilme" placeholder="filme da semana"><input id="gfOnde" placeholder="onde (Prime Video…)"><button class="pri gb" id="gfSet">DEFINIR FILME</button>${b('TIRAR FILME', '!filme off')}</div>
+    <div class="pnrow"><input id="gfUser" placeholder="@usuário"><input id="gfTit" placeholder="filme pedido"><button class="pri gb" id="gfAdd">ADICIONAR PEDIDO</button><button data-cmd="!limparfilmes" data-conf="Zerar a fila de filmes, os feitos e os recusados?">LIMPAR FILMES</button></div>
+    <div class="lbl">ROLETA</div>
+    <div class="rolbtns"><button data-rol="girar">▶ GIRAR PRÓXIMO</button><button data-rol="desafio">⏱ DESAFIO</button><button data-rol="limpar">LIMPAR FILA</button></div>
+    <div class="rol-msg" id="rolMsg"></div>
+  </section>`;
 }
 
 /* ---------- BUSCA ---------- */
@@ -972,13 +1048,17 @@ function render() {
   document.querySelector('.wrap').classList.toggle('wide', geral);
   $('geral').hidden = !geral;
   abas();
+  adminGeral();
+  const cc = $('capaCtl'), alvo = geral ? $('geral') : $('topo');
+  if (cc.nextElementSibling !== alvo) alvo.before(cc);   // o controle da capa fica na GERAL (admin) e na aba CAPA
+  cc.hidden = !(ADMIN && senha && (geral || aba === 'capa'));
   if (geral) {
-    ['statusRow', 'filaCard', 'feitosCard', 'calCard', 'comoCard', 'capaCtl'].forEach(i => { $(i).hidden = true; });
+    ['statusRow', 'filaCard', 'feitosCard', 'calCard', 'comoCard'].forEach(i => { $(i).hidden = true; });
     $('topo').innerHTML = ''; $('painel').innerHTML = ''; pnKey = '';
     renderGeral();
     return;
   }
-  $('statusRow').hidden = false; $('filaCard').hidden = false; $('capaCtl').hidden = !(ADMIN && senha);
+  $('statusRow').hidden = false; $('filaCard').hidden = false;
   painel();
   $('calCard').hidden = aba === 'cassino';
   const a = ABAS[aba], linha = dados[aba] || {}, d = linha.data || {};
@@ -1110,7 +1190,7 @@ function painel() {
 }
 
 document.addEventListener('click', async e => {
-  const b = e.target.closest('#painel button, .adm2 button');
+  const b = e.target.closest('#painel button, .adm2 button, #gAdm button[data-cmd], #gAdm .gb');
   if (!b) return;
   const v = id => ($(id)?.value || '').trim();
   let cmd = b.dataset.cmd;
@@ -1119,6 +1199,18 @@ document.addEventListener('click', async e => {
     const t = (prompt(b.dataset.edit === 'atual' ? 'Novo texto do pedido do AGORA:' : 'Novo texto do pedido ' + b.dataset.edit + ':') || '').trim();
     if (!t) return;
     cmd = '!editar ' + b.dataset.edit + ' ' + t;
+  } else if (b.id === 'gAdd') {
+    const u = v('gUser').replace(/^@/, '').replace(/\s+/g, '');
+    if (!u) return msgPainel('⚠ falta o @usuário');
+    cmd = ('!addfila @' + u + ' ' + v('gPick') + ($('gBuild').checked ? ' build' : '')).replace(/\s+/g, ' ').trim();
+  } else if (b.id === 'gfAdd') {
+    const u = v('gfUser').replace(/^@/, '').replace(/\s+/g, '');
+    if (!u) return msgPainel('⚠ falta o @usuário');
+    if (!v('gfTit')) return msgPainel('⚠ falta o filme');
+    cmd = '!addfilme @' + u + ' ' + v('gfTit');
+  } else if (b.id === 'gfSet') {
+    if (!v('gfFilme')) return msgPainel('⚠ falta o nome do filme');
+    cmd = '!filme ' + v('gfFilme') + (v('gfOnde') ? ' | ' + v('gfOnde') : '');
   } else if (b.id === 'pnAdd') {
     const u = v('pnUser').replace(/^@/, '').replace(/\s+/g, '');
     if (!u) return msgPainel('⚠ falta o @usuário');
@@ -1129,7 +1221,7 @@ document.addEventListener('click', async e => {
     cmd = '!filme ' + v('pnFilme') + (v('pnOnde') ? ' | ' + v('pnOnde') : '');
   }
   if (!cmd) return;
-  if (await enviar(cmd) && b.id === 'pnAdd') ['pnUser', 'pnPick', 'pnTit'].forEach(i => { if ($(i)) $(i).value = ''; });
+  if (await enviar(cmd) && ['pnAdd', 'gAdd', 'gfAdd'].includes(b.id)) ['pnUser', 'pnPick', 'pnTit', 'gUser', 'gPick', 'gfUser', 'gfTit'].forEach(i => { if ($(i)) $(i).value = ''; });
 });
 
 /* ---------- MODO ADMIN ---------- */
@@ -1143,7 +1235,7 @@ function admUI() {
   b.className = 'adm-badge' + (senha ? ' on' : '');
   b.textContent = (senha ? 'ADMIN' : '🔒 ADMIN') + (window.TEMA && TEMA.rotulo() ? ' · ' + TEMA.rotulo() : '');   // lembra que o tema está forçado
   b.title = senha ? 'Modo admin ativo' : 'Entrar no modo admin';
-  $('capaCtl').hidden = !senha || aba === 'geral';
+  $('capaCtl').hidden = !senha || !(aba === 'geral' || aba === 'capa');
 }
 
 // erro rápido no selo (some em 4 s)
@@ -1265,7 +1357,11 @@ setInterval(capaEstado, 1000);
 
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  irAba(b.dataset.aba);
+  const g = b.dataset.g;
+  irAba(g === 'geral' ? 'geral' : (ultimo[g] || (g === 'fila' ? (JOGOS.find(k => dados[k]?.data?.ativo === true) || 'dbd') : 'cassino')));
+});
+$('subtabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (b) irAba(b.dataset.aba);
 });
 $('geral').addEventListener('click', e => {
   const b = e.target.closest('[data-ir]'); if (b) irAba(b.dataset.ir);
