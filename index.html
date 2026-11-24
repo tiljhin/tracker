@@ -957,7 +957,7 @@ async function capaEstado() {
   box.hidden = false;
   $('capaNome').textContent = e.jogo;
   const resta = e.fim ? Math.max(0, Math.ceil((e.fim - Date.now()) / 1000)) : 0;
-  $('capaInfo').textContent = `RODADA ${e.n}/${e.total} · ${e.fase === 'play' ? (resta ? resta + 's' : 'valendo') : 'REVELADA'}${e.modo ? ' · ' + ({nevoa:'NÉVOA',pixel:'PIXELADA',zoom:'ZOOM',mosaico:'MOSAICO'}[e.modo]||e.modo.toUpperCase()) : ''}` + (e.al && e.al.length ? ' · aceita: ' + e.al.slice(0, 3).join(', ') : '');
+  $('capaInfo').textContent = `RODADA ${e.n}/${e.total} · ${e.fase === 'play' ? (resta ? resta + 's' : 'valendo') : 'REVELADA'}${e.modo ? ' · ' + ({nevoa:'DESFOQUE',pixel:'PIXELADA',zoom:'ZOOM',mosaico:'MOSAICO'}[e.modo]||e.modo.toUpperCase()) : ''}` + (e.al && e.al.length ? ' · aceita: ' + e.al.slice(0, 3).join(', ') : '');
   if (capaId !== e.id) {
     capaId = e.id;
     const im = $('capaImg');
