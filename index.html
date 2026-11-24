@@ -434,6 +434,42 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 #gAdm.min .adm-tog i{transform:rotate(180deg)}
 #gAdm.min #gAdmBody{display:none}
 #gAdm.min{margin-bottom:6px}
+
+/* ---------- BIGOFLIX destaque ---------- */
+.filme{display:flex;gap:18px;align-items:flex-start}
+.poster{position:relative;flex:none;width:132px;aspect-ratio:2/3;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(160deg,#3A1A10,#160C08);box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.poster span{position:absolute;inset:0;display:grid;place-items:center;font:700 54px 'Cinzel',serif;color:color-mix(in srgb,var(--ouro) 55%,transparent)}
+.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.filme-i{min-width:0}
+.filme-t{font:700 26px/1.1 'Cinzel',serif;color:var(--cl);margin-bottom:10px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.fchips span{font:700 11px/1 Montserrat,sans-serif;letter-spacing:.6px;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:rgba(0,0,0,.2)}
+.fchips .cls{border-color:var(--cor);color:var(--cl)}
+.svc{display:inline-block;font:800 11px/1 Montserrat,sans-serif;letter-spacing:1.2px;color:var(--sv);border:1px solid var(--sv);background:color-mix(in srgb,var(--sv) 14%,transparent);border-radius:99px;padding:6px 12px;margin-bottom:10px}
+.sin{margin:0;font-size:13px;line-height:1.5;color:var(--mut);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:560px){.poster{width:96px}.filme-t{font-size:20px}}
+/* ---------- ranking do mês / VIP ---------- */
+.vip{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px;align-items:stretch}
+.vip-l{padding:20px;border-radius:14px;border:1px solid var(--cor);background:radial-gradient(120% 120% at 0 0,color-mix(in srgb,var(--cor) 28%,transparent),transparent 70%),rgba(0,0,0,.2)}
+.vip-k{font:800 11px/1 Montserrat,sans-serif;letter-spacing:1.4px;color:var(--ouro);margin-bottom:12px}
+.vip-n{font:700 34px/1.05 'Cinzel',serif;color:var(--cl);word-break:break-word}
+.vip-p{margin-top:10px;color:var(--mut);font-size:14px}.vip-p b{font:700 28px 'Cinzel',serif;color:var(--cl)}
+.vip-d{margin-top:8px;font-size:12px;color:var(--mut);line-height:1.5}
+.vip-r ol{margin:0}
+.regra{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font:600 11px/1.5 Montserrat,sans-serif;letter-spacing:.6px;color:var(--mut)}
+@media(max-width:760px){.vip{grid-template-columns:1fr}}
+/* ---------- COMO PARTICIPAR numa linha ---------- */
+.cts{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:10px!important}
+.ct{display:block!important;padding:12px!important}
+.ct img{width:26px!important;height:26px!important;display:block;margin-bottom:8px}
+.ct b{margin-bottom:6px}
+.ct p{font-size:12px!important;line-height:1.45!important}
+@media(max-width:1000px){.cts{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:560px){.cts{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+/* ---------- admin: colunas com a mesma altura ---------- */
+.adm-grid{align-items:stretch}
+#gAdmFlix{flex:1;display:flex}#gAdmFlix>section{flex:1}
+.adm-side #capaCtl{flex:1;margin:0}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -759,14 +795,23 @@ function renderGeral() {
 
   // ---- BIGOFLIX ----
   const fm = fxOn ? fx.filme : null;
-  const cFlix = sc('s4', 'film', 'BIGOFLIX', '',
-    (fm ? `<div class="lbl">FILME DA SEMANA</div><div class="big" style="font-size:20px">${esc(fm.titulo)}</div><div class="who">${esc(fm.onde || (fm.quem ? 'pedido de ' + fm.quem : ''))}</div>` : vazio('Nenhum filme da semana definido.'))
+  const mt = fm ? infoFilme(fm.titulo) : null;
+  const sv = fm && fm.onde ? servico(fm.onde) : null;
+  const filmeH = fm
+    ? `<div class="filme"><div class="poster">${mt && mt.cap ? `<img src="${esc(mt.cap)}" alt="" onerror="this.remove()">` : ''}<span>${esc(fm.titulo.slice(0, 1).toUpperCase())}</span></div>
+        <div class="filme-i"><div class="lbl" style="margin-bottom:6px">FILME DA SEMANA</div><div class="filme-t">${esc(fm.titulo)}</div>
+        <div class="fchips">${mt && mt.ano ? `<span>${esc(mt.ano)}</span>` : ''}${mt && mt.min ? `<span>${Math.floor(mt.min / 60)}h ${pad(mt.min % 60)}min</span>` : ''}${mt && mt.cls ? `<span class="cls">${esc(mt.cls)}</span>` : ''}${mt && mt.gen ? `<span>${esc(mt.gen)}</span>` : ''}</div>
+        ${sv ? `<div class="svc" style="--sv:${sv.cor}">${sv.nome}</div>` : (fm.onde ? `<div class="who">${esc(fm.onde)}</div>` : '')}
+        ${mt && mt.sin ? `<p class="sin">${esc(mt.sin)}</p>` : ''}</div></div>`
+    : vazio('Nenhum filme da semana definido.');
+  const cFlix = sc('s6', 'film', 'BIGOFLIX', '',
+    filmeH
     + (filmes.length ? `<div class="lbl sub-l">NA FILA · ${filmes.length}</div><div class="rolagem"><ol>${filmes.map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}<small>${esc(p.quem)}</small></div>${admOn ? botoes(p) + posBtns(i, true) : ''}</li>`).join('')}</ol></div>` : '')
   );
 
   // ---- CASSINO ----
   const hall = Array.isArray(cd.hall) ? cd.hall : [];
-  const cCass = sc('s4', 'coin', 'CASSINO', '',
+  const cCass = sc('s6', 'coin', 'CASSINO', '',
     (ctop.length ? `<div class="lbl" style="margin-bottom:0">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
     + (hall.length ? `<div class="lbl sub-l">HALL DOS JACKPOTS</div><ol>${hall.slice(0, 3).map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('')}</ol>` : '')
   );
@@ -781,15 +826,26 @@ function renderGeral() {
 
   // ---- JOGO DA CAPA ----
   const ultP = partidas(capaL).slice(-1)[0];
-  const cCapa = sc('s6', 'capa', 'JOGO DA CAPA', '',
+  const cCapa = sc('s8', 'capa', 'JOGO DA CAPA', '',
     (capaTop.length ? `<div class="lbl" style="margin-bottom:0">RANKING DE ${MESES[cal.m].toUpperCase()}</div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
     + (ultP ? `<div class="lbl sub-l">ÚLTIMA PARTIDA</div><div class="capaHist">${ultP.map(capaTile).join('')}</div>` : '')
   );
 
-  // ---- BIGODINHOS DO MÊS ----
-  const cTop = sc('s6', 'trofeu', 'BIGODINHOS DO MÊS', '',
-    ativos.length ? `<div class="lbl" style="margin-bottom:0">QUEM MAIS PEDIU</div>` + rank(ativos, p => `<div class="nm">${esc(p.n)}</div><b class="val">${plural(p.c, 'pedido', 'pedidos')}</b>`)
-    : vazio('Ninguém teve pedido atendido neste mês ainda. Pede o seu!'));
+  // ---- BIGODINHOS DO MÊS: ranking de participação (candidato a VIP do mês) ----
+  const part = {};
+  const P = q => { q = (q || '').toString().replace(/^@/, '').trim(); if (!q) return null; const k2 = q.toLowerCase(); return part[k2] || (part[k2] = { n: q, ped: 0, sub: 0, giro: 0, capa: 0, cass: 0 }); };
+  feitos.forEach(l => { const o = P(l.quem); if (!o) return; o.ped++; if (['sub', 'resub', 'gift'].includes(l.origem)) o.sub++; });
+  cal.linhas.filter(l => l.aba === 'roleta').forEach(l => { const o = P(l.quem); if (o) o.giro++; });
+  capaL.filter(l => l.quem).forEach(l => { const o = P(l.quem); if (o) o.capa++; });
+  ctop.forEach(p => { const o = P(p.nome); if (o) o.cass += Number(p.giros) || 0; });
+  const rk = Object.values(part).map(o => ({ ...o, pts: o.ped * PESO.ped + o.sub * PESO.sub + o.giro * PESO.giro + o.capa * PESO.capa + o.cass * PESO.cass })).filter(o => o.pts > 0).sort((a, b) => b.pts - a.pts).slice(0, 6);
+  const det = o => [o.ped && plural(o.ped, 'pedido', 'pedidos'), o.sub && plural(o.sub, 'sub', 'subs'), o.giro && plural(o.giro, 'giro', 'giros'), o.capa && plural(o.capa, 'acerto', 'acertos'), o.cass && plural(o.cass, 'giro no cassino', 'giros no cassino')].filter(Boolean).join(' · ');
+  const cTop = sc('s12', 'trofeu', 'BIGODINHOS DO MÊS', '',
+    rk.length
+      ? `<div class="vip"><div class="vip-l"><div class="vip-k">👑 VIP DO MÊS · ${MESES[cal.m].toUpperCase()}</div><div class="vip-n">${esc(rk[0].n)}</div><div class="vip-p"><b data-cid="vip" data-cnt="${rk[0].pts}">${fmtN(rk[0].pts)}</b> pontos</div><div class="vip-d">${det(rk[0])}</div></div>
+          <div class="vip-r">${rk.length > 1 ? rank(rk.slice(1), p => `<div class="nm">${esc(p.n)}<small>${det(p)}</small></div><b class="val">${fmtN(p.pts)} pts</b>`).replace('<ol>', '<ol start="2">').replace(/<span class="n(?: ouro| pod)?">(\d+)<\/span>/g, (m, d) => `<span class="n${+d + 1 <= 3 ? ' pod' : ''}">${+d + 1}</span>`) : ''}</div></div>
+         <div class="regra">COMO SOMA: pedido atendido ${PESO.ped} · sub/resub/gift +${PESO.sub} · giro na roleta ${PESO.giro} · acerto na capa ${PESO.capa} · giro no cassino ${PESO.cass}</div>`
+      : vazio('Ninguém pontuou neste mês ainda. Pede, gira, joga: tudo soma!'));
 
   // ---- ATIVIDADE DO MÊS (clica num dia pra ver o que rolou) ----
   const diasMes = new Date(cal.y, cal.m + 1, 0).getDate(), primeiro = new Date(cal.y, cal.m, 1).getDay();
@@ -816,17 +872,23 @@ function renderGeral() {
   const cAtiv = sc('s12', 'cal', `ATIVIDADE · ${MESES[cal.m].toUpperCase()} ${cal.y}`, '',
     `<div class="ativ-in"><div><div class="heat">${heat}</div><div class="heat-leg">MENOS <i></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> MAIS<span style="margin-left:auto">${fmtN(ativ.length)} no mês</span></div></div><div>${listaDia}</div></div>`);
 
-  // ---- COMO PARTICIPAR (rodapé, cor própria) ----
-  const ct = (img, tit, txt) => `<div class="ct">${img ? `<img src="${img}" alt="">` : ''}<div><b>${tit}</b><p>${txt}</p></div></div>`;
+  // ---- COMO PARTICIPAR (rodapé, uma linha só) ----
+  const ct = (img, tit, txt) => `<div class="ct">${img ? `<img src="${img}" alt="">` : ''}<b>${tit}</b><p>${txt}</p></div>`;
   const cComo = `<section class="sc s12 como-box"><div class="sc-h"><span class="sc-i">${IC.info}</span><span class="sc-t">COMO PARTICIPAR</span><a class="hbtn pri" href="${LIVEPIX}" target="_blank" rel="noopener" style="margin-left:auto">PEDIR PELO LIVEPIX</a></div><div class="cts">`
-    + ct(EMB.dbd, 'DEAD BY DAYLIGHT', ABAS.dbd.como) + ct(EMB.over, 'OVERWATCH', ABAS.over.como) + ct(EMB.deadlock, 'DEADLOCK', ABAS.deadlock.como)
-    + ct('', 'BIGOFLIX', ABAS.flix.como) + ct('', 'CASSINO', ABAS.cassino.como) + ct('', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b> na roleta da live. O desafio que sai na roda é cumprido ao vivo.') + ct('', 'JOGO DA CAPA', ABAS.capa.como)
+    + ct(EMB.dbd, 'DBD', 'Pix com o <b>nome do killer</b>. <b>R$ 1</b> escolhe, <b>R$ 2</b> com build.')
+    + ct(EMB.over, 'OVERWATCH', 'Pix com o <b>nome do herói</b>. <b>R$ 1</b> escolhe.')
+    + ct(EMB.deadlock, 'DEADLOCK', 'Pix com o <b>nome do herói</b>. <b>R$ 1</b> escolhe.')
+    + ct('', 'BIGOFLIX', 'Pix de <b>R$ 15</b> com <b>filme</b> e o nome.')
+    + ct('', 'CASSINO', '<b>!cassino</b> no chat e aposte BIGOCOINS. 7 com bigode leva o jarro.')
+    + ct('', 'ROLETA', 'Cada <b>R$</b> de doação vira <b>giros</b>.')
+    + ct('', 'CAPA', 'Digite o <b>nome do jogo</b> no chat, sem comando.')
     + `</div></section>`;
   const html = hero + stats + cAgora + cFila + cFlix + cCass + cRol + cCapa + cTop + cAtiv + cComo;
   if (html !== geralHtml) { geralHtml = html; el.innerHTML = html; contadores(el); }
 }
 
 let filaSel = null;
+const PESO = { ped: 5, sub: 5, giro: 3, capa: 2, cass: 1 };   // pontos do ranking do mês (dá pra mexer aqui)
 document.addEventListener('click', e => {
   const c = e.target.closest('#geral [data-sel]');
   if (c) { filaSel = c.dataset.sel; renderGeral(); return; }
@@ -839,6 +901,38 @@ function render() {
   $('pill').hidden = true;
   adminGeral();
   renderGeral();
+}
+
+
+/* ---------- BIGOFLIX: capa/infos do filme (iTunes Search, sem chave) + selo do serviço ---------- */
+const flixMeta = {};
+function infoFilme(titulo) {
+  const k2 = (titulo || '').toLowerCase().trim();
+  if (!k2) return null;
+  if (k2 in flixMeta) return flixMeta[k2] || null;
+  flixMeta[k2] = null;
+  if (DEMO) { flixMeta[k2] = { cap: '', ano: '2005', min: 91, cls: 'L', gen: 'Animação', sin: 'Um jovem inventor vai à cidade grande atrás de seu sonho e descobre que nem tudo é como nos folhetos.' }; return flixMeta[k2]; }
+  try { const c = JSON.parse(localStorage.getItem('trkFlix:' + k2) || 'null'); if (c) { flixMeta[k2] = c; return c; } } catch (e) {}
+  const cb = 'itn' + Math.random().toString(36).slice(2, 8), sc2 = document.createElement('script');
+  window[cb] = r => {
+    const x = r && r.results && r.results[0];
+    if (x) {
+      flixMeta[k2] = { cap: (x.artworkUrl100 || '').replace('100x100bb', '400x600bb'), ano: (x.releaseDate || '').slice(0, 4), min: x.trackTimeMillis ? Math.round(x.trackTimeMillis / 60000) : 0, cls: x.contentAdvisoryRating || '', gen: x.primaryGenreName || '', sin: x.shortDescription || '' };
+      try { localStorage.setItem('trkFlix:' + k2, JSON.stringify(flixMeta[k2])); } catch (e) {}
+      geralHtml = ''; renderGeral();
+    }
+    sc2.remove(); delete window[cb];
+  };
+  sc2.onerror = () => { sc2.remove(); delete window[cb]; };
+  sc2.src = 'https://itunes.apple.com/search?media=movie&entity=movie&country=br&lang=pt_br&limit=1&callback=' + cb + '&term=' + encodeURIComponent(titulo);
+  document.head.appendChild(sc2);
+  return null;
+}
+function servico(onde) {
+  const o = (onde || '').toLowerCase();
+  const T = [['disney', 'DISNEY+', '#4F7DF3'], ['prime', 'PRIME VIDEO', '#27B6E8'], ['amazon', 'PRIME VIDEO', '#27B6E8'], ['hbo', 'HBO MAX', '#A56BFF'], ['max', 'MAX', '#A56BFF'], ['netflix', 'NETFLIX', '#E5484D'], ['globoplay', 'GLOBOPLAY', '#F25C5C'], ['apple', 'APPLE TV+', '#C9C9D1'], ['paramount', 'PARAMOUNT+', '#4F8CFF'], ['youtube', 'YOUTUBE', '#FF5A4D']];
+  const t = T.find(x => o.includes(x[0]));
+  return t ? { nome: t[1], cor: t[2] } : { nome: esc(onde).toUpperCase(), cor: '#E3A059' };
 }
 
 /* contadores animados: sobem do valor anterior até o novo (sem animar se "reduzir movimento" estiver ligado) */
