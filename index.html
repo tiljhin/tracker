@@ -482,6 +482,7 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .av.lg{width:78px;height:78px;font-size:32px;border:2px solid var(--ouro);box-shadow:0 0 0 3px color-mix(in srgb,var(--cor) 35%,transparent),0 0 22px color-mix(in srgb,var(--cor) 45%,transparent)}
 .vip-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}.vip-top .vip-k{margin:0}
 .vip-r li{gap:10px}
+.agora > img.ret{width:104px;height:104px;object-fit:cover;object-position:50% 20%;border-radius:16px;border:1px solid var(--cor);filter:none;box-shadow:0 0 22px rgba(227,80,42,.35),inset 0 0 0 1px rgba(0,0,0,.4);background:#120A07}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -824,7 +825,7 @@ function renderGeral() {
   const admAtual = atual && admOn ? `<div class="g-adm">${botoes(atual, true)}${topoBtn()}</div>` : '';
   const agoraC = noAr
     ? (atual
-      ? `<div class="agora"><img src="emb-${k}.webp" alt=""><div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
+      ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
   const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
@@ -1004,6 +1005,58 @@ function servico(onde) {
   return t ? { nome: t[1], cor: t[2] } : { nome: esc(onde).toUpperCase(), cor: '#E3A059' };
 }
 
+
+/* ---------- RETRATO do killer / herói no AGORA NA LIVE ---------- */
+const norm = t => (t || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]/g, '');
+const DBD_K = { trapper: 'K01_TheTrapper', wraith: 'K02_TheWraith', hillbilly: 'K03_TheHillbilly', nurse: 'K04_TheNurse', shape: 'K05_TheShape', hag: 'K06_TheHag', doctor: 'K07_TheDoctor', huntress: 'K08_TheHuntress', cannibal: 'K09_TheCannibal', nightmare: 'K10_TheNightmare', pig: 'K11_ThePig', clown: 'K12_TheClown', spirit: 'K13_TheSpirit', legion: 'K14_TheLegion', plague: 'K15_ThePlague', ghostface: 'K16_TheGhostFace', demogorgon: 'K17_TheDemogorgon', oni: 'K18_TheOni', deathslinger: 'K19_TheDeathslinger', executioner: 'K20_TheExecutioner', blight: 'K21_TheBlight', twins: 'K22_TheTwins', trickster: 'K23_TheTrickster', nemesis: 'K24_TheNemesis', cenobite: 'K25_TheCenobite', artist: 'K26_TheArtist', onryo: 'K27_TheOnryo', dredge: 'K28_TheDredge', mastermind: 'K29_TheMastermind', knight: 'K30_TheKnight', skullmerchant: 'K31_TheSkullMerchant', singularity: 'K32_TheSingularity', xenomorph: 'K33_TheXenomorph', goodguy: 'K34_TheGoodGuy', unknown: 'K35_TheUnknown', lich: 'K36_TheLich', darklord: 'K37_TheDarkLord', houndmaster: 'K38_TheHoundmaster', ghoul: 'K39_TheGhoul', animatronic: 'K40_TheAnimatronic', krasue: 'K41_TheKrasue', first: 'K42_TheFirst', slasher: 'K43_TheSlasher', judgment: 'K44_TheJudgment', terrifier: 'K45_TheTerrifier' };
+const DBD_ALIAS = { pyramidhead: 'executioner', michael: 'shape', myers: 'shape', michaelmyers: 'shape', freddy: 'nightmare', leatherface: 'cannibal', bubba: 'cannibal', billy: 'hillbilly', chucky: 'goodguy', pinhead: 'cenobite', alien: 'xenomorph', sadako: 'onryo', vecna: 'lich', dracula: 'darklord', wesker: 'mastermind', springtrap: 'animatronic', amanda: 'pig', jigsaw: 'pig', vommy: 'plague', caça: 'huntress', sally: 'spirit', demo: 'demogorgon', ghost: 'ghostface', doc: 'doctor', skull: 'skullmerchant', sm: 'skullmerchant', joey: 'clown', krasue: 'krasue', tricky: 'trickster', terrifier: 'terrifier', art: 'terrifier' };
+const retr = { over: null, deadlock: null };   // listas carregadas da internet (guardadas no navegador por 7 dias)
+function pegaLista(chave, url, trata) {
+  if (retr[chave] !== null) return;
+  retr[chave] = {};
+  try { const c = JSON.parse(localStorage.getItem('trkRet:' + chave) || 'null'); if (c && Date.now() - c.t < 7 * 864e5) { retr[chave] = c.m; return; } } catch (e) {}
+  fetch(url).then(r => r.ok ? r.json() : Promise.reject()).then(j => {
+    const m = trata(j) || {};
+    retr[chave] = m;
+    if (Object.keys(m).length) { try { localStorage.setItem('trkRet:' + chave, JSON.stringify({ t: Date.now(), m })); } catch (e) {} geralHtml = ''; renderGeral(); }
+  }).catch(() => {});
+}
+function acha(mapa, nome) {
+  const n = norm(nome); if (!n) return '';
+  if (mapa[n]) return mapa[n];
+  const ch = Object.keys(mapa).filter(x => x.length >= 4 && n.includes(x)).sort((a, b) => b.length - a.length)[0];
+  return ch ? mapa[ch] : '';
+}
+function retrato(jogo, nome) {
+  if (jogo === 'dbd') {
+    let n = norm(nome); n = DBD_ALIAS[n] || n;
+    let f = DBD_K[n];
+    if (!f) { const ch = Object.keys(DBD_K).filter(x => x.length >= 4 && n.includes(x)).sort((a, b) => b.length - a.length)[0]; f = ch && DBD_K[ch]; }
+    return f ? `https://deadbydaylight.wiki.gg/images/${f}_Portrait.png` : '';
+  }
+  if (jogo === 'over') {
+    pegaLista('over', 'https://overfast-api.tekrop.fr/heroes', j => { const m = {}; (j || []).forEach(h => { if (h.portrait) { m[norm(h.name)] = h.portrait; m[norm(h.key)] = h.portrait; } }); return m; });
+    return acha(retr.over || {}, nome);
+  }
+  if (jogo === 'deadlock') {
+    pegaLista('deadlock', 'https://assets.deadlock-api.com/v2/heroes?only_active=true', j => {
+      const m = {};
+      (Array.isArray(j) ? j : []).forEach(h => {
+        const im = h.images || {};
+        const pref = ['icon_hero_card', 'hero_card', 'selection_image', 'icon_image_small', 'minimap_image'].map(x => im[x]).find(Boolean) || Object.values(im).find(v => typeof v === 'string' && /\.(png|webp|jpg)/.test(v));
+        if (pref && h.name) m[norm(h.name)] = pref;
+      });
+      return m;
+    });
+    return acha(retr.deadlock || {}, nome);
+  }
+  return '';
+}
+function retratoImg(jogo, nome) {
+  const u = retrato(jogo, nome), emb = `emb-${jogo}.webp`;
+  return u ? `<img class="ret" src="${esc(u)}" alt="" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${emb}';this.classList.remove('ret')">` : `<img src="${emb}" alt="">`;
+}
+
 /* contadores animados: sobem do valor anterior até o novo (sem animar se "reduzir movimento" estiver ligado) */
 const cntPrev = {};
 function contadores(root) {
@@ -1064,36 +1117,36 @@ function demoDados() {
   const t = m => new Date(Date.now() - m * 60000).toISOString();
   const it = (id, e, q, o, b) => ({ id: 'd' + id, escolha: e, quem: q, origem: o || 'doacao', build: !!b });
   return Object.fromEntries([
-    { id: 'dbd', updated_at: t(0), data: { ativo: true, aberta: true, atual: it(1, 'Trapper', 'lu_bigode', 'doacao', true),
-      fila: [it(2, 'Nurse', 'marcos', 'doacao'), it(3, 'Spirit', 'ana', 'sub', true), it(4, 'Wraith', 'zeca', 'resub'), it(5, 'Huntress', 'pri', 'pontos'), it(6, 'Doctor', 'tiago', 'pontos')],
-      feitos: [it(7, 'Hillbilly', 'bia'), it(8, 'Clown', 'rafa', 'doacao', true)], recusados: [it(9, 'Skull Merchant', 'joao')] } },
-    { id: 'over', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(10, 'Mercy', 'ana'), it(11, 'Reaper', 'zeca')], feitos: [], recusados: [] } },
-    { id: 'deadlock', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(12, 'Haze', 'pri')], feitos: [], recusados: [] } },
-    { id: 'flix', updated_at: t(1), data: { filme: { titulo: 'Robôs', onde: 'Disney+' }, fila: [it(13, 'Toy Story', 'ana'), it(14, 'Coraline', 'zeca'), it(15, 'Shrek', 'marcos')] } },
-    { id: 'roleta', updated_at: t(0), data: { jogo: 'dbd', girando: false, dobro: true, fila: [{ quem: 'ana' }, { quem: 'marcos' }, { quem: 'pri' }],
+    { id: 'dbd', updated_at: t(0), data: { ativo: true, aberta: true, atual: it(1, 'Trapper', 'gustagomm', 'doacao', true),
+      fila: [it(2, 'Nurse', 'chzem', 'doacao'), it(3, 'Spirit', 'guia___', 'sub', true), it(4, 'Wraith', 'reyezgg', 'resub'), it(5, 'Huntress', 'letletica', 'pontos'), it(6, 'Doctor', 'guidoceu', 'pontos')],
+      feitos: [it(7, 'Hillbilly', 'geovannarml'), it(8, 'Clown', 'itz_liitzy', 'doacao', true)], recusados: [it(9, 'Skull Merchant', 'itz_liitzy')] } },
+    { id: 'over', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(10, 'Mercy', 'guia___'), it(11, 'Reaper', 'reyezgg')], feitos: [], recusados: [] } },
+    { id: 'deadlock', updated_at: t(1), data: { ativo: false, aberta: true, fila: [it(12, 'Haze', 'letletica')], feitos: [], recusados: [] } },
+    { id: 'flix', updated_at: t(1), data: { filme: { titulo: 'Robôs', onde: 'Disney+' }, fila: [it(13, 'Toy Story', 'guia___'), it(14, 'Coraline', 'reyezgg'), it(15, 'Shrek', 'chzem')] } },
+    { id: 'roleta', updated_at: t(0), data: { jogo: 'dbd', girando: false, dobro: true, fila: [{ quem: 'guia___' }, { quem: 'chzem' }, { quem: 'letletica' }],
       desafios: [{ nome: 'Jogar de olhos fechados', quem: '@tiago', total: 300, inicio: t(1), cumprido: false }, { nome: 'Sem usar habilidade', quem: '@bia', total: 300, inicio: t(30), cumprido: true }] } },
     { id: 'cassino', updated_at: t(0), data: { jarro: 1450, jarroCheio: 3000, jarroInicial: 500, moeda: 'BIGOCOINS', mesNome: 'novembro', giros: 120,
-      top: [{ nome: 'lu_bigode', liquido: 5400, giros: 30, vitorias: 8 }, { nome: 'zeca', liquido: 3100, giros: 20, vitorias: 5 }, { nome: 'ana', liquido: 900, giros: 9, vitorias: 2 }, { nome: 'pri', liquido: 300, giros: 6, vitorias: 1 }],
-      hall: [{ n: 'zeca', em: t(3000), v: 2650, a: 100 }, { n: 'lu_bigode', em: t(9000), v: 4100, a: 250 }] } }
+      top: [{ nome: 'gustagomm', liquido: 5400, giros: 30, vitorias: 8 }, { nome: 'reyezgg', liquido: 3100, giros: 20, vitorias: 5 }, { nome: 'guia___', liquido: 900, giros: 9, vitorias: 2 }, { nome: 'letletica', liquido: 300, giros: 6, vitorias: 1 }],
+      hall: [{ n: 'reyezgg', em: t(3000), v: 2650, a: 100 }, { n: 'gustagomm', em: t(9000), v: 4100, a: 250 }] } }
   ].map(l => [l.id, l]));
 }
 function demoLinhas(y, m) {
   const hoje = new Date(), cur = y === undefined || (y === hoje.getFullYear() && m === hoje.getMonth());
   y = y === undefined ? hoje.getFullYear() : y; m = m === undefined ? hoje.getMonth() : m;
-  const now = cur ? hoje : new Date(y, m + 1, 0, 23, 59), out = [], nomes = ['marcos', 'lu_bigode', 'tiago', 'ana', 'zeca', 'pri'];
+  const now = cur ? hoje : new Date(y, m + 1, 0, 23, 59), out = [], nomes = ['gustagomm', 'gustagomm', 'gustagomm', 'chzem', 'chzem', 'chzem', 'guia___', 'guia___', 'guia___', 'reyezgg', 'reyezgg', 'letletica', 'letletica', 'guidoceu', 'geovannarml', 'itz_liitzy'];
   const esc3 = { dbd: ['Trapper', 'Nurse', 'Spirit', 'Wraith'], over: ['Mercy', 'Reaper', 'Tracer'], deadlock: ['Haze', 'Abrams'], flix: ['Robôs', 'Coraline'] };
   let sd = 7 + m * 13; const rnd = n => { sd = (sd * 9301 + 49297) % 233280; return Math.floor(sd / 233280 * n); };
   for (let i = 0; i < 46; i++) {
     const d = new Date(y, m, 1 + rnd(now.getDate()), 14 + rnd(8), rnd(60));
     if (d > now) continue;
     const a = ['dbd', 'dbd', 'dbd', 'over', 'deadlock', 'flix'][rnd(6)];
-    out.push({ aba: a, quem: nomes[rnd(6)], escolha: esc3[a][rnd(esc3[a].length)], build: rnd(4) === 0, origem: ['doacao', 'doacao', 'sub', 'pontos'][rnd(4)], feito_em: d.toISOString() });
+    out.push({ aba: a, quem: nomes[rnd(nomes.length)], escolha: esc3[a][rnd(esc3[a].length)], build: rnd(4) === 0, origem: ['doacao', 'doacao', 'sub', 'pontos'][rnd(4)], feito_em: d.toISOString() });
   }
-  for (let i = 0; i < 6; i++) { const d = new Date(y, m, 1 + rnd(now.getDate()), 20, rnd(60)); if (d <= now) out.push({ aba: 'roleta', quem: nomes[rnd(6)], escolha: 'Giro', build: false, origem: '', feito_em: d.toISOString() }); }
+  for (let i = 0; i < 6; i++) { const d = new Date(y, m, 1 + rnd(now.getDate()), 20, rnd(60)); if (d <= now) out.push({ aba: 'roleta', quem: nomes[rnd(nomes.length)], escolha: 'Giro', build: false, origem: '', feito_em: d.toISOString() }); }
   const jogos = [['1145360', 'Hades'], ['367520', 'Hollow Knight'], ['504230', 'Celeste'], ['413150', 'Stardew Valley']];
   for (let p = 0; p < 3; p++) {
     const d = new Date(y, m, Math.max(1, now.getDate() - p * 2), 21, 10 + p);
-    jogos.forEach((j, r) => out.push({ aba: 'capa', quem: r === 3 ? '' : nomes[rnd(6)], escolha: j[1], id: j[0], partida: 'p' + p, rodada: r + 1, pontos: r === 3 ? 0 : 30 - r * 5, feito_em: new Date(d.getTime() + r * 60000).toISOString() }));
+    jogos.forEach((j, r) => out.push({ aba: 'capa', quem: r === 3 ? '' : nomes[rnd(nomes.length)], escolha: j[1], id: j[0], partida: 'p' + p, rodada: r + 1, pontos: r === 3 ? 0 : 30 - r * 5, feito_em: new Date(d.getTime() + r * 60000).toISOString() }));
   }
   return out.sort((x, y) => new Date(x.feito_em) - new Date(y.feito_em));
 }
