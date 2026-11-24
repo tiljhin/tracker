@@ -134,6 +134,12 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .capabtns button[data-capa="iniciar"] { background: var(--cor); border-color: var(--cor); color: #0B0604; }
 .capabtns input { width: 74px; text-align: center; }
 
+
+.capaVez { display: flex; gap: 14px; align-items: center; margin: 4px 0 12px; }
+.capaVez img { width: 84px; height: 126px; object-fit: contain; background: #0B0604; border: 1px solid var(--line); border-radius: 8px; }
+.capaVez .nm { font: 700 18px 'Montserrat', sans-serif; color: var(--txt); }
+.capaVez small { display: block; margin-top: 4px; font-size: 12px; color: var(--mut); letter-spacing: 1px; }
+
 /* selo no topo, à direita (em cima do BIGOFLIX): 🔒 deslogado · ● ADMIN logado */
 .adm-badge {
   position: absolute; top: 0; right: 0;
@@ -238,6 +244,7 @@ footer { position: relative; z-index: 1; }
 
   <div id="capaCtl" class="card" hidden>
     <div class="lbl">JOGO DA CAPA</div>
+    <div class="capaVez" id="capaVez" hidden><img id="capaImg" alt=""><div><div class="nm" id="capaNome"></div><small id="capaInfo"></small></div></div>
     <div class="capabtns">
       <input id="capaN" type="number" min="1" max="30" placeholder="rodadas" title="Rodadas (vazio = padrão do widget)">
       <button data-capa="iniciar">▶ INICIAR</button>
@@ -869,6 +876,30 @@ document.addEventListener('click', async e => {
   msg.textContent = ok ? 'Enviado. O widget pega em ~2 s (só com a live no ar).' : 'Erro ao enviar.';
   if (!ok) avisar('erro');
 });
+
+// capa da vez: só o admin vê (o widget grava o estado numa tabela que só abre com a senha)
+let capaId = null;
+async function capaEstado() {
+  if (!ADMIN || !senha) return;
+  let e = null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/capa_estado_get`, { method: 'POST', headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ segredo: senha }) });
+    if (r.ok) e = await r.json();
+  } catch (x) {}
+  const box = $('capaVez');
+  if (!e || !e.jogo) { box.hidden = true; $('capaInfo').textContent = ''; return; }
+  box.hidden = false;
+  $('capaNome').textContent = e.jogo;
+  const resta = e.fim ? Math.max(0, Math.ceil((e.fim - Date.now()) / 1000)) : 0;
+  $('capaInfo').textContent = `RODADA ${e.n}/${e.total} · ${e.fase === 'play' ? (resta ? resta + 's' : 'valendo') : 'REVELADA'}${e.modo ? ' · ' + e.modo.toUpperCase() : ''}` + (e.al && e.al.length ? ' · aceita: ' + e.al.slice(0, 3).join(', ') : '');
+  if (capaId !== e.id) {
+    capaId = e.id;
+    const im = $('capaImg');
+    im.onerror = () => { im.onerror = null; im.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/header.jpg`; };
+    im.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/library_600x900.jpg`;
+  }
+}
+setInterval(capaEstado, 2000);
 
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
