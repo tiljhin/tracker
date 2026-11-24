@@ -748,7 +748,7 @@ const IC = {
 };
 
 const ICX = n => `<img class="icx" src="ic-${n}.webp" alt="">`;
-Object.assign(IC, { film: ICX('flix'), coin: ICX('ficha'), roleta: ICX('roleta'), capa: ICX('capa'), cal: ICX('cal'), trofeu: ICX('coroa'), list: ICX('fila'), check: ICX('feitos'), jarro: ICX('jarro'), giros: ICX('giros') });
+Object.assign(IC, { live: ICX('live'), info: ICX('como'), film: ICX('flix'), coin: ICX('ficha'), roleta: ICX('roleta'), capa: ICX('capa'), cal: ICX('cal'), trofeu: ICX('coroa'), list: ICX('fila'), check: ICX('feitos'), jarro: ICX('jarro'), giros: ICX('giros') });
 
 const onlineAba = k => { const l = dados[k]; return !!(l && temDado(l.data) && l.updated_at && (Date.now() - new Date(l.updated_at)) / 60000 <= OFFLINE_MIN); };
 let geralHtml = '';
