@@ -125,6 +125,15 @@ footer { text-align: center; color: var(--mut); font-size: 13px; margin-top: 24p
 .rolbtns button[data-rol="girar"] { background: var(--cor); border-color: var(--cor); color: #0B0604; }
 .rol-msg { min-height: 16px; margin-top: 8px; font-size: 13px; color: var(--mut); }
 
+
+/* controle do jogo da capa (modo admin) */
+.capabtns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.capabtns button, .capabtns input { background: var(--card2); border: 1px solid var(--line); color: var(--txt); font: 700 13px 'Montserrat', sans-serif; letter-spacing: 1px; padding: 10px 14px; border-radius: 8px; }
+.capabtns button { cursor: pointer; }
+.capabtns button:hover { border-color: var(--cor); }
+.capabtns button[data-capa="iniciar"] { background: var(--cor); border-color: var(--cor); color: #0B0604; }
+.capabtns input { width: 74px; text-align: center; }
+
 /* selo no topo, à direita (em cima do BIGOFLIX): 🔒 deslogado · ● ADMIN logado */
 .adm-badge {
   position: absolute; top: 0; right: 0;
@@ -225,6 +234,19 @@ footer { position: relative; z-index: 1; }
     <span id="pill" class="pill">carregando…</span>
     <div id="jogoLogo" class="jogologo" hidden></div>
     <span id="upd"></span>
+  </div>
+
+  <div id="capaCtl" class="card" hidden>
+    <div class="lbl">JOGO DA CAPA</div>
+    <div class="capabtns">
+      <input id="capaN" type="number" min="1" max="30" placeholder="rodadas" title="Rodadas (vazio = padrão do widget)">
+      <button data-capa="iniciar">▶ INICIAR</button>
+      <button data-capa="pular">⏭ PULAR</button>
+      <button data-capa="parar">■ PARAR</button>
+      <button data-capa="ranking">🏆 RANKING</button>
+      <button data-capa="zerar">ZERAR MÊS</button>
+    </div>
+    <div class="rol-msg" id="capaMsg"></div>
   </div>
 
   <div id="topo"></div>
@@ -759,6 +781,7 @@ function admUI() {
   b.className = 'adm-badge' + (senha ? ' on' : '');
   b.textContent = (senha ? 'ADMIN' : '🔒 ADMIN') + (window.TEMA && TEMA.rotulo() ? ' · ' + TEMA.rotulo() : '');   // lembra que o tema está forçado
   b.title = senha ? 'Modo admin ativo' : 'Entrar no modo admin';
+  $('capaCtl').hidden = !senha;
 }
 
 // erro rápido no selo (some em 4 s)
@@ -828,6 +851,22 @@ document.addEventListener('click', async e => {
   if (msg) msg.textContent = 'enviando…';
   const ok = await rpc('roleta_acao', { segredo: senha, p_acao: acao });
   if (msg) msg.textContent = ok ? 'Enviado. A roleta pega em instantes.' : 'Erro ao enviar.';
+  if (!ok) avisar('erro');
+});
+
+// controle do jogo da capa: manda o comando para a fila que o widget lê a cada 2 s
+document.addEventListener('click', async e => {
+  const b = e.target.closest('.capabtns button');
+  if (!b) return;
+  if (!senha) return abrirPopup();
+  const acao = b.dataset.capa;
+  if (acao === 'zerar' && !confirm('Zerar o ranking do mês do jogo da capa?')) return;
+  const n = parseInt($('capaN').value, 10);
+  const arg = acao === 'iniciar' && n > 0 && n < 100 ? String(n) : null;
+  const msg = $('capaMsg');
+  msg.textContent = 'enviando…';
+  const ok = await rpc('capa_acao', { segredo: senha, p_acao: acao, p_arg: arg });
+  msg.textContent = ok ? 'Enviado. O widget pega em ~2 s (só com a live no ar).' : 'Erro ao enviar.';
   if (!ok) avisar('erro');
 });
 
