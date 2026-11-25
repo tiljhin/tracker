@@ -495,6 +495,9 @@ body:not(:has(#gAdm:not([hidden]))) .status:has(#pill[hidden]){display:none}
 .tg.l{--t:#E3502A;color:#F27A58}.tg.o{--t:#E3A059}.tg.c{--t:#FBD491}.tg.r{--t:#B5532F;color:#D98A6A}
 ol li.sepl{padding:14px 0 6px}
 .dia-t{margin-bottom:8px}
+.tg-w{margin:0 0 6px}
+.sub-l{margin:14px 0 6px !important}
+.dia-t{margin-bottom:6px !important}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -840,7 +843,7 @@ function renderGeral() {
   const admAtual = atual && admOn ? `<div class="g-adm">${botoes(atual, true)}${topoBtn()}</div>` : '';
   const agoraC = noAr
     ? (atual
-      ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div style="margin-bottom:6px"><span class="tg l">${ABAS[k].agora}</span></div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
+      ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div class="tg-w"><span class="tg l">${ABAS[k].agora}</span></div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
   const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
@@ -871,7 +874,7 @@ function renderGeral() {
   const sv = fm && fm.onde ? servico(fm.onde) : null;
   const filmeH = fm
     ? `<div class="filme"><div class="poster">${mt && mt.cap ? `<img src="${esc(mt.cap)}" alt="" onerror="this.remove()">` : ''}<span>${esc(fm.titulo.slice(0, 1).toUpperCase())}</span></div>
-        <div class="filme-i"><div style="margin-bottom:8px"><span class="tg l">FILME DA SEMANA</span></div><div class="filme-t">${esc(fm.titulo)}</div>
+        <div class="filme-i"><div class="tg-w"><span class="tg l">FILME DA SEMANA</span></div><div class="filme-t">${esc(fm.titulo)}</div>
         <div class="fchips">${mt && mt.ano ? `<span>${esc(mt.ano)}</span>` : ''}${mt && mt.min ? `<span>${Math.floor(mt.min / 60)}h ${pad(mt.min % 60)}min</span>` : ''}${mt && mt.cls ? `<span class="cls">${esc(mt.cls)}</span>` : ''}${mt && mt.gen ? `<span>${esc(mt.gen)}</span>` : ''}</div>
         ${sv ? `<div class="svc" style="--sv:${sv.cor}">${sv.nome}</div>` : (fm.onde ? `<div class="who">${esc(fm.onde)}</div>` : '')}
         ${mt && mt.sin ? `<p class="sin">${esc(mt.sin)}</p>` : ''}</div></div>`
@@ -884,7 +887,7 @@ function renderGeral() {
   // ---- CASSINO ----
   const hall = Array.isArray(cd.hall) ? cd.hall : [];
   const cCass = sc('s5', 'coin', 'CASSINO', '',
-    (ctop.length ? `<div style="margin-bottom:2px"><span class="tg l">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</span></div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
+    (ctop.length ? `<div class="tg-w"><span class="tg l">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</span></div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
     + (hall.length ? `<div class="sub-l"><span class="tg o">HALL DOS JACKPOTS</span></div><ol>${hall.slice(0, 3).map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('')}</ol>` : '')
   );
 
@@ -899,7 +902,7 @@ function renderGeral() {
   // ---- JOGO DA CAPA ----
   const ultP = partidas(capaL).slice(-1)[0];
   const cCapa = sc('s8', 'capa', 'JOGO DA CAPA', '',
-    (capaTop.length ? `<div style="margin-bottom:2px"><span class="tg l">RANKING DE ${MESES[cal.m].toUpperCase()}</span></div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
+    (capaTop.length ? `<div class="tg-w"><span class="tg l">RANKING DE ${MESES[cal.m].toUpperCase()}</span></div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
     + (ultP ? `<div class="sub-l"><span class="tg c">ÚLTIMA PARTIDA</span></div><div class="capaHist">${ultP.map(capaTile).join('')}</div>` : '')
   );
 
