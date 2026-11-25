@@ -490,6 +490,11 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .ct img{width:46px;height:46px}
 header{margin-bottom:16px}
 body:not(:has(#gAdm:not([hidden]))) .status:has(#pill[hidden]){display:none}
+.tg{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:99px;font:800 10px/1 Montserrat,sans-serif;letter-spacing:1.5px;white-space:nowrap;color:var(--t);border:1px solid color-mix(in srgb,var(--t) 45%,transparent);background:color-mix(in srgb,var(--t) 14%,#120A07)}
+.tg::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--t);box-shadow:0 0 6px var(--t)}
+.tg.l{--t:#E3502A;color:#F27A58}.tg.o{--t:#E3A059}.tg.c{--t:#FBD491}.tg.r{--t:#B5532F;color:#D98A6A}
+ol li.sepl{padding:14px 0 6px}
+.dia-t{margin-bottom:8px}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -835,7 +840,7 @@ function renderGeral() {
   const admAtual = atual && admOn ? `<div class="g-adm">${botoes(atual, true)}${topoBtn()}</div>` : '';
   const agoraC = noAr
     ? (atual
-      ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div class="lbl">${ABAS[k].agora}</div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
+      ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div style="margin-bottom:6px"><span class="tg l">${ABAS[k].agora}</span></div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
   const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
@@ -850,12 +855,12 @@ function renderGeral() {
   const chips = `<div class="gchips">${JOGOS.map(j => `<button class="gchip${j === sel ? ' on' : ''}" data-sel="${j}"><img src="${EMB[j]}" alt="">${NOMES[j].toUpperCase()}${j === ativoK ? '<span class="dot"></span>' : ''}</button>`).join('')}</div>`;
   let li = '';
   filaS.forEach((p, i) => {
-    if (p.origem === 'pontos' && (i === 0 || filaS[i - 1].origem !== 'pontos')) li += '<li class="sepl">PEDIDOS COM SUCOS</li>';
+    if (p.origem === 'pontos' && (i === 0 || filaS[i - 1].origem !== 'pontos')) li += '<li class="sepl"><span class="tg o">PEDIDOS COM SUCOS</span></li>';
     li += `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}${tags(p)}<small>${esc(p.quem)}</small></div>${admOn ? botoes(p) : ''}${admSel ? posBtns(i) : ''}</li>`;
   });
-  recS.forEach((p, i) => { if (!i) li += '<li class="sepl">RECUSADOS</li>'; li += `<li class="risc"><span class="n">✕</span><div class="nm"><s>${esc(p.escolha)}</s><small>${esc(p.quem)}</small></div></li>`; });
+  recS.forEach((p, i) => { if (!i) li += '<li class="sepl"><span class="tg r">RECUSADOS</span></li>'; li += `<li class="risc"><span class="n">✕</span><div class="nm"><s>${esc(p.escolha)}</s><small>${esc(p.quem)}</small></div></li>`; });
   const pausa = onS && dS.ativo !== true ? `<div class="g-mais">FILA PAUSADA · A LIVE ESTÁ EM ${esc((NOMES[ativoK] || 'OUTRO JOGO').toUpperCase())}</div>` : '';
-  const feitC = feitS.length ? `<div class="lbl sub-l">FEITOS NESTA LIVE · ${feitS.length}</div><ol>${feitS.map(i => `<li><span class="n">✔</span><div class="nm">${esc(i.escolha)}${i.build ? '<span class="tag">BUILD</span>' : ''}<small>${esc(i.quem)}</small></div></li>`).join('')}</ol>` : '';
+  const feitC = feitS.length ? `<div class="sub-l"><span class="tg c">FEITOS NESTA LIVE · ${feitS.length}</span></div><ol>${feitS.map(i => `<li><span class="n">✔</span><div class="nm">${esc(i.escolha)}${i.build ? '<span class="tag">BUILD</span>' : ''}<small>${esc(i.quem)}</small></div></li>`).join('')}</ol>` : '';
   const cFila = sc('s7', 'list', `FILA · ${NOMES[sel].toUpperCase()}`, '',
     chips + pausa + (li ? `<div class="rolagem"><ol>${li}</ol></div>` : vazio(onS ? ABAS[sel].vazio : 'Sem live neste jogo no momento.')) + feitC,
     `<span class="sc-chip">${filaS.length} ${filaS.length === 1 ? 'PEDIDO' : 'PEDIDOS'}</span>`);
@@ -866,36 +871,36 @@ function renderGeral() {
   const sv = fm && fm.onde ? servico(fm.onde) : null;
   const filmeH = fm
     ? `<div class="filme"><div class="poster">${mt && mt.cap ? `<img src="${esc(mt.cap)}" alt="" onerror="this.remove()">` : ''}<span>${esc(fm.titulo.slice(0, 1).toUpperCase())}</span></div>
-        <div class="filme-i"><div class="lbl" style="margin-bottom:6px">FILME DA SEMANA</div><div class="filme-t">${esc(fm.titulo)}</div>
+        <div class="filme-i"><div style="margin-bottom:8px"><span class="tg l">FILME DA SEMANA</span></div><div class="filme-t">${esc(fm.titulo)}</div>
         <div class="fchips">${mt && mt.ano ? `<span>${esc(mt.ano)}</span>` : ''}${mt && mt.min ? `<span>${Math.floor(mt.min / 60)}h ${pad(mt.min % 60)}min</span>` : ''}${mt && mt.cls ? `<span class="cls">${esc(mt.cls)}</span>` : ''}${mt && mt.gen ? `<span>${esc(mt.gen)}</span>` : ''}</div>
         ${sv ? `<div class="svc" style="--sv:${sv.cor}">${sv.nome}</div>` : (fm.onde ? `<div class="who">${esc(fm.onde)}</div>` : '')}
         ${mt && mt.sin ? `<p class="sin">${esc(mt.sin)}</p>` : ''}</div></div>`
     : vazio('Nenhum filme da semana definido.');
   const cFlix = sc('s7', 'film', 'BIGOFLIX', '',
     filmeH
-    + (filmes.length ? `<div class="lbl sub-l">NA FILA · ${filmes.length}</div><div class="rolagem"><ol>${filmes.map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}<small>${esc(p.quem)}</small></div>${admOn ? botoes(p) + posBtns(i, true) : ''}</li>`).join('')}</ol></div>` : '')
+    + (filmes.length ? `<div class="sub-l"><span class="tg o">NA FILA · ${filmes.length}</span></div><div class="rolagem"><ol>${filmes.map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">${esc(p.escolha)}<small>${esc(p.quem)}</small></div>${admOn ? botoes(p) + posBtns(i, true) : ''}</li>`).join('')}</ol></div>` : '')
   );
 
   // ---- CASSINO ----
   const hall = Array.isArray(cd.hall) ? cd.hall : [];
   const cCass = sc('s5', 'coin', 'CASSINO', '',
-    (ctop.length ? `<div class="lbl" style="margin-bottom:0">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
-    + (hall.length ? `<div class="lbl sub-l">HALL DOS JACKPOTS</div><ol>${hall.slice(0, 3).map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('')}</ol>` : '')
+    (ctop.length ? `<div style="margin-bottom:2px"><span class="tg l">LÍDERES${cd.mesNome ? ' · ' + esc(cd.mesNome).toUpperCase() : ' DO MÊS'}</span></div>` + rank(ctop.slice(0, 5), p => `<div class="nm">${esc(p.nome)}<small>${plural(p.giros, 'giro', 'giros')} · ${plural(p.vitorias, 'vitória', 'vitórias')}</small></div><b class="val">+${fmtN(p.liquido)}</b>`) : vazio(ABAS.cassino.vazio))
+    + (hall.length ? `<div class="sub-l"><span class="tg o">HALL DOS JACKPOTS</span></div><ol>${hall.slice(0, 3).map(x => `<li><span class="n ouro">7</span><div class="nm">${esc(x.n)}<small>${haQuanto(x.em)}</small></div><b class="val">+${fmtN(x.v)}</b></li>`).join('')}</ol>` : '')
   );
 
   // ---- ROLETA ----
   const jogoRol = ({ over: 'OVERWATCH', deadlock: 'DEADLOCK' })[rd.jogo] || 'DBD';
   const cRol = sc('s4', 'roleta', 'ROLETA', '',
     rOn ? `<div class="g-num" data-cid="rol" data-cnt="${rFila.length}">${fmtN(rFila.length)}</div><div class="g-sub">${rFila.length === 1 ? 'giro na fila' : 'giros na fila'} · jogo na roda: ${jogoRol}${rd.dobro ? ' · doação vale em dobro' : ''}</div>`
-        + (rDes.length ? `<div class="lbl sub-l">DESAFIOS</div><ol>${rDes.slice(0, 6).map(x => `<li><span class="n">${x.cumprido ? '✔' : '⏱'}</span><div class="nm">${esc(x.nome)}<small>${x.quem ? '@' + esc(String(x.quem).replace(/^@/, '')) : (x.inicio && !x.cumprido ? 'em andamento' : '')}</small></div></li>`).join('')}</ol>` : '')
-        + (rFila.length ? `<div class="lbl sub-l">PRÓXIMOS GIROS</div><ol>${rFila.slice(0, 4).map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">Giro<small>${esc(p.quem)}</small></div></li>`).join('')}</ol>` : '')
+        + (rDes.length ? `<div class="sub-l"><span class="tg l">DESAFIOS</span></div><ol>${rDes.slice(0, 6).map(x => `<li><span class="n">${x.cumprido ? '✔' : '⏱'}</span><div class="nm">${esc(x.nome)}<small>${x.quem ? '@' + esc(String(x.quem).replace(/^@/, '')) : (x.inicio && !x.cumprido ? 'em andamento' : '')}</small></div></li>`).join('')}</ol>` : '')
+        + (rFila.length ? `<div class="sub-l"><span class="tg o">PRÓXIMOS GIROS</span></div><ol>${rFila.slice(0, 4).map((p, i) => `<li><span class="n">${i + 1}</span><div class="nm">Giro<small>${esc(p.quem)}</small></div></li>`).join('')}</ol>` : '')
         : vazio('Roleta offline. Doações viram giros quando a live abre.'));
 
   // ---- JOGO DA CAPA ----
   const ultP = partidas(capaL).slice(-1)[0];
   const cCapa = sc('s8', 'capa', 'JOGO DA CAPA', '',
-    (capaTop.length ? `<div class="lbl" style="margin-bottom:0">RANKING DE ${MESES[cal.m].toUpperCase()}</div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
-    + (ultP ? `<div class="lbl sub-l">ÚLTIMA PARTIDA</div><div class="capaHist">${ultP.map(capaTile).join('')}</div>` : '')
+    (capaTop.length ? `<div style="margin-bottom:2px"><span class="tg l">RANKING DE ${MESES[cal.m].toUpperCase()}</span></div>` + rank(capaTop, p => `<div class="nm">${esc(p.n)}<small>${plural(p.w, 'acerto', 'acertos')}</small></div><b class="val">${fmtN(p.p)}</b>`) : vazio(ABAS.capa.vazio))
+    + (ultP ? `<div class="sub-l"><span class="tg c">ÚLTIMA PARTIDA</span></div><div class="capaHist">${ultP.map(capaTile).join('')}</div>` : '')
   );
 
   // ---- BIGODINHOS DO MÊS: ranking de participação (candidato a VIP do mês) ----
@@ -934,7 +939,7 @@ function renderGeral() {
   const itensDia = dia ? ativ2.filter(doDia) : [];
   const partDia = dia ? partidas(capa2.filter(doDia)) : [];
   const listaDia = dia
-    ? `<div class="dia-t">O QUE ROLOU EM ${pad(dia)}/${pad(vis.m + 1)}</div><div class="rolagem"><ol>`
+    ? `<div class="dia-t"><span class="tg o">O QUE ROLOU EM ${pad(dia)}/${pad(vis.m + 1)}</span></div><div class="rolagem"><ol>`
       + itensDia.map(l => { const t = new Date(l.feito_em); return `<li><span class="n">✔</span><div class="nm">${esc(l.escolha)}${tags(l)}<span class="tag-j">${NOMEJ[l.aba] || ''}</span><small>${esc(l.quem)} · ${pad(t.getHours())}:${pad(t.getMinutes())}</small></div></li>`; }).join('')
       + partDia.map(r => { const t = new Date(r[0].feito_em); return `<li class="capapart"><div class="capaHist">${r.map(capaTile).join('')}</div><small>${pad(t.getHours())}:${pad(t.getMinutes())} · capa · ${r.length} ${r.length === 1 ? 'rodada' : 'rodadas'}</small></li>`; }).join('')
       + `</ol></div>`
