@@ -580,7 +580,7 @@ ol li.sepl{padding:14px 0 6px}
 </div>
 
 <!-- modo admin: popup -->
-<dialog id="admDlg" class="dlg">
+<dialog id="dmDlg" class="dlg"> <form id="dmForm"> <div class="lbl">DAR BIGOCOINS</div> <input id="dmNome" type="text" placeholder="@ do Bigodinho (como no chat)" autocomplete="off" autocapitalize="none" spellcheck="false"> <input id="dmValor" type="number" placeholder="quantidade (use - para tirar)" step="1" inputmode="numeric"> <div class="dlg-msg" id="dmMsg"></div> <div class="dlg-btns"> <button type="button" id="dmFechar">FECHAR</button> <button type="button" id="dmConf">VER SALDO</button> <button type="submit" id="dmDar" class="pri">DAR</button> </div> </form> </dialog><dialog id="admDlg" class="dlg">
   <form id="admForm">
     <div class="lbl">MODO ADMIN</div>
     <div id="admLogin">
@@ -869,7 +869,7 @@ function renderGeral() {
   const base = Number(cd.jarroInicial) >= 0 && cd.jarroInicial !== undefined ? Number(cd.jarroInicial) : 500;   // brinde inicial do jarro: não conta como "enchido"
   const jvPct = Math.max(0, jv - base), jcheio = Math.max(1, cheio - base);
   const jarT = cd.jarro !== undefined
-    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.jarro}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div></div></div></section>`
+    ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.jarro}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div>${ADMIN && senha ? `<div class="gchips" style="margin:8px 0 0"><button class="gchip" id="dmAbrir" type="button"><img src="moeda.webp" alt="">DAR ${moeda}</button></div>` : ''}</div></div></section>`
     : stat('jarro', 'JARRO DO CASSINO', '—', 'cassino sem dados');
   const stats = stat('check', 'FEITOS NO MÊS', feitos.length, 'pedidos atendidos em ' + MESES[cal.m], 'feitos')
     + stat('list', 'NA FILA AGORA', noAr ? fila.length : '—', noAr ? 'pedidos de ' + NOMES[k] : 'sem live no momento', 'fila')
@@ -1362,7 +1362,7 @@ $('admForm').addEventListener('submit', async e => {
   admUI(); render();
 });
 
-$('admSair').addEventListener('click', () => {
+async function darMoedas(extra) { try { const r = await fetch(`${SUPABASE_URL}/functions/v1/dar-moedas`, { method: 'POST', headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ segredo: senha, nome: $('dmNome').value, valor: $('dmValor').value }, extra || {})) }); return await r.json(); } catch (e) { return { ok: false, erro: 'sem conexão' }; } } const dmMsg = (t, ok) => { const m = $('dmMsg'); m.textContent = t; m.style.color = ok === true ? 'var(--cl)' : ok === false ? '#E3502A' : ''; }; document.addEventListener('click', e => { if (!e.target.closest('#dmAbrir')) return; if (!senha) return abrirPopup(); dmMsg(''); $('dmDlg').showModal(); $('dmNome').focus(); }); $('dmFechar').addEventListener('click', () => $('dmDlg').close()); $('dmDlg').addEventListener('click', e => { if (e.target === $('dmDlg')) $('dmDlg').close(); }); $('dmConf').addEventListener('click', async () => { dmMsg('conferindo…'); const r = await darMoedas({ so_conferir: true }); dmMsg(r.ok ? `${r.nome} tem ${fmtN(r.saldo)} BIGOCOINS` : '⚠ ' + (r.erro || 'não foi'), !!r.ok); }); $('dmForm').addEventListener('submit', async e => { e.preventDefault(); const v = Math.trunc(Number($('dmValor').value)), n = $('dmNome').value.trim().replace(/^@/, ''); if (!n || !v) return dmMsg('Preencha o nome e a quantidade.', false); if (!confirm(`${v > 0 ? 'Dar' : 'Tirar'} ${fmtN(Math.abs(v))} BIGOCOINS ${v > 0 ? 'para' : 'de'} ${n}?`)) return; $('dmDar').disabled = true; dmMsg('enviando…'); const r = await darMoedas(); $('dmDar').disabled = false; if (r.ok) { dmMsg(`✓ ${r.nome}: ${fmtN(r.antes)} → ${fmtN(r.saldo)} BIGOCOINS`, true); $('dmValor').value = ''; } else dmMsg('⚠ ' + (r.erro || 'não foi'), false); }); $('admSair').addEventListener('click', () => {
   senha = '';
   try { localStorage.removeItem('trkSenha'); } catch (e) {}
   $('admDlg').close();
