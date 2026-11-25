@@ -867,7 +867,7 @@ function renderGeral() {
   const stat = (ic, lb, val, sb, cid) => { const n = typeof val === 'number'; return `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">${lb}</span><span class="sc-i">${IC[ic]}</span></div><div class="g-num"${n ? ` data-cid="${cid}" data-cnt="${val}"` : ''}>${n ? fmtN(val) : val}</div><div class="g-sub">${sb}</div></section>`; };
   const cheio = Number(cd.jarroCheio) > 0 ? Number(cd.jarroCheio) : 3000, jv = Number(cd.jarro) || 0;
   const base = Number(cd.jarroInicial) >= 0 && cd.jarroInicial !== undefined ? Number(cd.jarroInicial) : 500;   // brinde inicial do jarro: não conta como "enchido"
-  const jvPct = Math.max(0, jv - base), jcheio = Math.max(1, cheio - base);
+  const jvPct = Math.max(0, jv - base - (Number(cd.extra) || 0)), jcheio = Math.max(1, cheio - base);
   const jarT = cd.jarro !== undefined
     ? `<section class="sc st s3"><div class="st-ic"><span class="lbl" style="margin:0">JARRO DO CASSINO</span><span class="sc-i">${IC.jarro}</span></div><div class="jar-r">${pote(jvPct, jcheio)}<div><div class="g-num" data-cid="jarro" data-cnt="${jv}">${fmtN(jv)}</div><div class="g-sub">${moeda}</div><div class="g-sub">${Math.min(100, Math.round(jvPct / jcheio * 100))}% do pote</div></div></div></section>`
     : stat('jarro', 'JARRO DO CASSINO', '—', 'cassino sem dados');
