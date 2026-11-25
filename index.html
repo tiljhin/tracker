@@ -498,6 +498,17 @@ ol li.sepl{padding:14px 0 6px}
 .tg-w{margin:0 0 6px}
 .sub-l{margin:14px 0 6px !important}
 .dia-t{margin-bottom:6px !important}
+.prox{margin-top:16px;padding-top:2px;border-top:1px dashed var(--line)}
+.agora-wrap{display:flex;flex-direction:column;height:100%}
+.prox-i{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.prox-i:first-of-type{border-top:0}
+.prox-i > img{flex:none;width:54px;height:54px;object-fit:cover;object-position:50% 20%;border-radius:12px;border:1px solid var(--line);background:#120A07}
+.prox-i > img:not(.ret){object-fit:contain;border:0;background:none}
+.prox-i .nm{flex:1;min-width:0;font-weight:700;color:var(--cl)}
+.prox-i .nm small{display:block;font-weight:500;color:var(--mut);margin-top:2px}
+.prox-i .n{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--cor);background:color-mix(in srgb,var(--cor) 14%,var(--card));border:1px solid var(--line)}
+@media (max-width:560px){.st:has([data-cid="giros"]){grid-column:span 12 !important}}
+@media (max-width:560px){.gchips{gap:6px}.gchip{padding:7px 9px;font-size:10px;letter-spacing:.6px;gap:5px}.gchip img{width:16px;height:16px}}
 </style>
 <link rel="icon" href="icone.png">
 </head>
@@ -846,7 +857,9 @@ function renderGeral() {
       ? `<div class="agora">${retratoImg(k, atual.escolha)}<div><div class="tg-w"><span class="tg l">${ABAS[k].agora}</span></div><div class="big">${esc(atual.escolha)}</div><div class="who">pedido de ${esc(atual.quem)}${tags(atual)}</div></div></div>` + admAtual
       : vazio(`Nenhum pedido no AGORA ainda. ${fila.length ? 'O próximo da fila entra em instantes.' : 'Seja o primeiro: pede pelo LivePix!'}`))
     : vazio('A live está offline. Assim que abrir, o pedido da vez aparece aqui.');
-  const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
+  const proxL = noAr ? fila.slice(0, 3) : [];
+  const proxC = proxL.length ? `<div class="prox"><div class="sub-l"><span class="tg o">PRÓXIMOS DA FILA · ${fila.length}</span></div>${proxL.map((p, i) => `<div class="prox-i">${retratoImg(k, p.escolha)}<div class="nm"><b>${esc(p.escolha)}</b>${tags(p)}<small>${esc(p.quem)}</small></div><span class="n">${i + 1}</span></div>`).join('')}</div>` : '';
+  const cAgora = sc('s5', 'live', 'AGORA NA LIVE', '', agoraC + proxC, noAr ? `<span class="sc-chip ${aberta ? 'ok' : ''}">${aberta ? 'FILA ABERTA' : 'FILA FECHADA'}</span>` : '');
 
   // ---- FILA: um conjunto por jogo (DBD / OVER / DEADLOCK), escolhido nas pastilhas ----
   const sel = JOGOS.includes(filaSel) ? filaSel : k;
