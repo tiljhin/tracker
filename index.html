@@ -426,6 +426,9 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .pnrow.lives button.on{background:var(--c)!important;color:#120D07!important}
 .adm-box button.pri,.adm-box .pnl button.pri,.adm-box .rolbtns button[data-rol="girar"],.adm-box .capabtns button[data-capa="iniciar"]{color:#1A1208!important}
 .lv-over{--c:#FB7A3C!important}
+.lv-capa{--c:#E3A059!important}
+#capaBar{grid-template-columns:repeat(3,1fr)}
+#capaBar button.on::after{content:'ESCOLHIDO'}
 #gAdm{margin-bottom:16px}
 .adm-grid{margin-bottom:0!important}
 .adm-tog{display:flex;align-items:center;gap:8px;margin:0 auto 10px;padding:6px 16px;border-radius:0 0 12px 12px;border:1px solid #5E4424;border-top:0;background:#1C150C;color:#E3A059;font:800 11px/1 Montserrat,sans-serif;letter-spacing:1.4px;cursor:pointer}
@@ -537,6 +540,7 @@ ol li.sepl{padding:14px 0 6px}
         <div class="adm-h"><span class="adm-tag">ADMIN</span><span class="lbl" style="margin:0">JOGO DA CAPA</span></div>
         <div class="capaVez" id="capaVez" hidden><img id="capaImg" alt=""><div><div class="nm" id="capaNome"></div><small id="capaInfo"></small></div></div>
         <div class="capaSeq" id="capaSeq" hidden></div>
+        <div class="pnrow lives" id="capaBar"><button class="lv-capa" data-bar="capas">CAPAS</button><button class="lv-dbd" data-bar="dbd">DBD</button><button class="lv-over" data-bar="ow">OVERWATCH</button></div>
         <div class="capabtns">
           <input id="capaN" type="number" min="1" max="30" placeholder="rodadas" title="Rodadas (vazio = padrão do widget)">
           <button data-capa="iniciar">▶ INICIAR</button>
@@ -671,9 +675,16 @@ function pote(valor, cheio) {
   return `<div class="pote"><div class="moedas">${h}</div><img class="vidro" src="jarro.webp" alt="Jarro do jackpot"></div>`;
 }
 /* ---------- CAPA (aba própria: última partida, ranking do mês e histórico no calendário) ---------- */
+/* imagem de uma rodada: capa da Steam (baralho capas), retrato do killer (dbd) ou do herói (ow) */
+function capaFoto(bar, id) {
+  if (bar === 'dbd') return `https://deadbydaylight.wiki.gg/images/${id}_Portrait.png`;
+  if (bar === 'ow') return retrato('over', id);
+  return `https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/library_600x900.jpg`;
+}
+const capaImgHtml = (bar, id) => { const u = capaFoto(bar, id); return `<img src="${esc(u)}" referrerpolicy="no-referrer"${bar === 'capas' || !bar ? ` onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${esc(id)}/header.jpg'"` : ''} alt="">`; };
 function capaTile(l) {
   const ok = !!l.quem;
-  return `<div class="tile ${ok ? 'ok' : 'nao'}"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${esc(l.id)}/library_600x900.jpg" onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${esc(l.id)}/header.jpg'" alt=""><b>${ok ? esc(l.quem) : 'ninguém'}</b><small>${esc(l.escolha)}</small></div>`;
+  return `<div class="tile ${ok ? 'ok' : 'nao'}">${capaImgHtml(l.baralho, l.id)}<b>${ok ? esc(l.quem) : 'ninguém'}</b><small>${esc(l.escolha)}</small></div>`;
 }
 function partidas(linhas) {
   const m = new Map();
@@ -703,11 +714,11 @@ async function linhasEntre(d1, d2) {
     const [a, b, c] = await Promise.all([
       pag(`${SUPABASE_URL}/rest/v1/tracker_hist?select=aba,quem,escolha,build,origem,feito_em&and=(feito_em.gte.${ini},feito_em.lt.${fim})&order=feito_em.asc`),
       pag(`${SUPABASE_URL}/rest/v1/roleta_hist?select=quem,resultado,jogo,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`),
-      pag(`${SUPABASE_URL}/rest/v1/capa_hist?select=partida,rodada,jogo,steam_id,quem,pontos,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`)
+      pag(`${SUPABASE_URL}/rest/v1/capa_hist?select=partida,rodada,jogo,steam_id,quem,pontos,baralho,created_at&and=(created_at.gte.${ini},created_at.lt.${fim})&order=created_at.asc`)
     ]);
     // giros da roleta entram no calendário com o mesmo formato dos outros
     return a.concat(b.map(x => ({ aba: 'roleta', quem: x.quem, escolha: x.resultado, build: false, origem: '', feito_em: x.created_at })))
-      .concat(c.map(x => ({ aba: 'capa', quem: x.quem || '', escolha: x.jogo, id: x.steam_id, partida: x.partida, rodada: x.rodada, pontos: x.pontos, feito_em: x.created_at })));
+      .concat(c.map(x => ({ aba: 'capa', quem: x.quem || '', escolha: x.jogo, id: x.steam_id, baralho: x.baralho, partida: x.partida, rodada: x.rodada, pontos: x.pontos, feito_em: x.created_at })));
   } catch (e) { return null; }
 }
 async function carregarMes() {
@@ -1366,6 +1377,16 @@ document.addEventListener('click', async e => {
   if (!ok) avisar('erro');
 });
 
+// baralho do jogo da capa (CAPAS / DBD / OVERWATCH): fica escolhido neste navegador
+let capaBar = 'capas';
+try { capaBar = localStorage.getItem('trkBar') || 'capas'; } catch (e) {}
+function pintaBar() { document.querySelectorAll('#capaBar button').forEach(b => b.classList.toggle('on', b.dataset.bar === capaBar)); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('#capaBar button'); if (!b) return;
+  capaBar = b.dataset.bar; try { localStorage.setItem('trkBar', capaBar); } catch (x) {}
+  pintaBar();
+});
+pintaBar();
 // controle do jogo da capa: manda o comando para a fila que o widget lê a cada 2 s
 document.addEventListener('click', async e => {
   const b = e.target.closest('.capabtns button');
@@ -1374,7 +1395,7 @@ document.addEventListener('click', async e => {
   const acao = b.dataset.capa;
   if (acao === 'zerar' && !confirm('Zerar o ranking do mês do jogo da capa?')) return;
   const n = parseInt($('capaN').value, 10);
-  const arg = acao === 'iniciar' && n > 0 && n < 100 ? String(n) : null;
+  const arg = acao === 'iniciar' ? ((n > 0 && n < 100 ? String(n) : '') + ':' + capaBar) : null;
   const msg = $('capaMsg');
   msg.textContent = 'enviando…';
   const ok = await rpc('capa_acao', { segredo: senha, p_acao: acao, p_arg: arg });
@@ -1398,18 +1419,18 @@ async function capaEstado() {
   if (sq.dataset.k !== chave) {
     sq.dataset.k = chave;
     sq.hidden = !(e && e.seq && e.seq.length);
-    sq.innerHTML = (e && e.seq || []).map((x, i) => `<div class="${i + 1 === e.n ? 'at' : ''}"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${x.id}/library_600x900.jpg" onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${x.id}/header.jpg'" alt=""><span>${i + 1}. ${esc(x.n)}</span></div>`).join('');
+    sq.innerHTML = (e && e.seq || []).map((x, i) => `<div class="${i + 1 === e.n ? 'at' : ''}">${/^https?:/.test(x.id) ? `<img src="${esc(x.id)}" referrerpolicy="no-referrer" alt="">` : capaImgHtml('capas', x.id)}<span>${i + 1}. ${esc(x.n)}</span></div>`).join('');
   }
   if (!e || !e.jogo) { box.hidden = true; $('capaInfo').textContent = ''; return; }
   box.hidden = false;
   $('capaNome').textContent = e.jogo;
   const resta = e.fim ? Math.max(0, Math.ceil((e.fim - Date.now()) / 1000)) : 0;
-  $('capaInfo').textContent = `RODADA ${e.n}/${e.total} · ${e.fase === 'play' ? (resta ? resta + 's' : 'valendo') : 'REVELADA'}${e.modo ? ' · ' + ({nevoa:'DESFOQUE',pixel:'PIXELADA',zoom:'ZOOM',mosaico:'MOSAICO'}[e.modo]||e.modo.toUpperCase()) : ''}` + (e.al && e.al.length ? ' · aceita: ' + e.al.slice(0, 3).join(', ') : '');
+  $('capaInfo').textContent = `${({ capas: 'CAPAS', dbd: 'DBD', ow: 'OVERWATCH' }[e.baralho] || 'CAPAS')} · RODADA ${e.n}/${e.total} · ${e.fase === 'play' ? (resta ? resta + 's' : 'valendo') : 'REVELADA'}${e.modo ? ' · ' + ({nevoa:'DESFOQUE',pixel:'PIXELADA',zoom:'ZOOM',mosaico:'MOSAICO'}[e.modo]||e.modo.toUpperCase()) : ''}` + (e.al && e.al.length ? ' · aceita: ' + e.al.slice(0, 3).join(', ') : '');
   if (capaId !== e.id) {
     capaId = e.id;
     const im = $('capaImg');
     im.onerror = () => { im.onerror = null; im.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/header.jpg`; };
-    im.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/library_600x900.jpg`;
+    im.src = /^https?:/.test(e.id) ? e.id : `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.id}/library_600x900.jpg`;
   }
 }
 setInterval(capaEstado, 1000);
