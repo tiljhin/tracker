@@ -429,6 +429,11 @@ body:has(#gAdm:not([hidden])) header{margin-bottom:0}
 .lv-capa{--c:#E3A059!important}
 
 #capaBar{grid-template-columns:repeat(3,1fr)}
+#capaTabs{grid-template-columns:1fr 1fr;margin:0 0 12px}#capaTabs button.on::after{content:none}
+.apRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;margin-top:6px;background:var(--card2);border:1px solid var(--line);border-radius:8px;font-size:13px}
+.apRow button{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer}.apRow button:hover{color:var(--cor)}
+#capaApel input{width:100%;box-sizing:border-box;margin-top:8px;background:var(--card2);border:1px solid var(--line);color:var(--txt);font:600 13px 'Montserrat',sans-serif;padding:10px 12px;border-radius:8px}
+#capaApel .apAdd{margin-top:8px;background:var(--cor);border:1px solid var(--cor);color:#0B0604;font:800 13px 'Montserrat',sans-serif;letter-spacing:1px;padding:10px 14px;border-radius:8px;cursor:pointer}
 #capaBar button.on::after{content:'ESCOLHIDO'}
 #gAdm{margin-bottom:16px}
 .adm-grid{margin-bottom:0!important}
@@ -539,6 +544,8 @@ ol li.sepl{padding:14px 0 6px}
       <div id="gAdmRol"></div>
       <div id="capaCtl" class="card adm-box" hidden>
         <div class="adm-h"><span class="adm-tag">ADMIN</span><span class="lbl" style="margin:0">JOGO DA CAPA</span></div>
+        <div class="pnrow lives" id="capaTabs"><button class="lv-capa on" data-aba="jogo">JOGO</button><button class="lv-dbd" data-aba="apel">APELIDOS</button></div>
+        <div id="capaJogo">
         <div class="capaVez" id="capaVez" hidden><img id="capaImg" alt=""><div><div class="nm" id="capaNome"></div><small id="capaInfo"></small></div></div>
         <div class="capaSeq" id="capaSeq" hidden></div>
         <div class="pnrow lives" id="capaBar"><button class="lv-capa" data-bar="capas">CAPAS</button><button class="lv-dbd" data-bar="dbd">DBD</button><button class="lv-over" data-bar="ow">OVERWATCH</button></div>
@@ -553,6 +560,15 @@ ol li.sepl{padding:14px 0 6px}
           <button data-capa="zerar">ZERAR MÊS</button>
         </div>
         <div class="rol-msg" id="capaMsg"></div>
+        </div>
+        <div id="capaApel" hidden>
+          <small>Nome que está errado ou falta em português: o widget passa a aceitar em até 45 s. Depois eu junto na lista fixa.</small>
+          <input id="apItem" placeholder="Item (como aparece, ex.: Route 66)" maxlength="120">
+          <input id="apNome" placeholder="Também aceitar (ex.: Rota 66)" maxlength="120">
+          <button class="apAdd" id="apAdd">+ ADICIONAR</button>
+          <div class="rol-msg" id="apMsg"></div>
+          <div id="apLista"></div>
+        </div>
       </div>
     </div>
     </div>
@@ -1402,6 +1418,39 @@ document.addEventListener('click', async e => {
   const ok = await rpc('capa_acao', { segredo: senha, p_acao: acao, p_arg: arg });
   msg.textContent = ok ? 'Enviado. O widget pega em ~2 s (só com a live no ar).' : 'Erro ao enviar.';
   if (!ok) avisar('erro');
+});
+
+// aba APELIDOS: nomes extras aceitos pelo jogo da capa (guardados no Supabase, o widget lê a cada 45 s)
+async function apRpc(fn, body) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, { method: 'POST', headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ segredo: senha }, body)) });
+    return r.ok ? await r.json() : null;
+  } catch (x) { return null; }
+}
+async function apLista() {
+  const l = await apRpc('capa_apelido_list', {});
+  $('apLista').innerHTML = !l ? '<small>Não consegui carregar.</small>' : l.length
+    ? l.slice().reverse().map(x => `<div class="apRow"><span><b>${esc(x.item)}</b> → ${esc(x.apelido)}</span><button data-apdel="${x.id}" title="Remover">×</button></div>`).join('')
+    : '<small>Nenhum apelido ainda.</small>';
+}
+document.addEventListener('click', async e => {
+  const t = e.target.closest('#capaTabs button');
+  if (t) {
+    document.querySelectorAll('#capaTabs button').forEach(b => b.classList.toggle('on', b === t));
+    const ap = t.dataset.aba === 'apel'; $('capaJogo').hidden = ap; $('capaApel').hidden = !ap;
+    if (ap) { if (!senha) return abrirPopup(); const n = $('capaNome').textContent; if (n && !$('apItem').value) $('apItem').value = n; apLista(); }
+    return;
+  }
+  const d = e.target.closest('[data-apdel]');
+  if (d && senha) { await apRpc('capa_apelido_del', { p_id: +d.dataset.apdel }); return apLista(); }
+  if (e.target.id === 'apAdd') {
+    if (!senha) return abrirPopup();
+    const item = $('apItem').value.trim(), nome = $('apNome').value.trim();
+    if (!item || !nome) { $('apMsg').textContent = 'Preencha os dois campos.'; return; }
+    const ok = await apRpc('capa_apelido_add', { p_item: item, p_apelido: nome });
+    $('apMsg').textContent = ok ? 'Adicionado. O widget passa a aceitar em até 45 s.' : 'Erro ao adicionar.';
+    if (ok) { $('apNome').value = ''; apLista(); } else avisar('erro');
+  }
 });
 
 // capa da vez: só o admin vê (o widget grava o estado numa tabela que só abre com a senha)
