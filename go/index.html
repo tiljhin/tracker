@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer-when-downgrade">
+<title>Abrindo a oferta… | TIL JHIN</title>
+<style>
+  :root{--bg:#0f0d0c;--card:#1a1613;--line:#2e2620;--tx:#f3ece4;--mut:#a89a8c;--ac:#ff9a3c;--ac2:#ff5e2b}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(1200px 600px at 50% -10%,#2a1a10 0%,var(--bg) 60%);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:20px}
+  .box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 24px;text-align:center;box-shadow:0 20px 60px #0008}
+  .logo{font-weight:800;letter-spacing:.08em;font-size:13px;color:var(--ac)}
+  h1{font-size:20px;margin:10px 0 6px}
+  p{margin:6px 0;color:var(--mut);font-size:14px}
+  .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:20px 0 14px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2));animation:f 1.2s ease-out forwards}
+  @keyframes f{to{width:100%}}
+  a.btn{display:none;margin-top:14px;padding:12px 18px;border-radius:12px;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#1a0e06;font-weight:700;text-decoration:none}
+  .aviso{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">BIGO OFERTAS · TIL JHIN</div>
+  <h1 id="t">Abrindo a oferta…</h1>
+  <p id="s">Você será levado à loja em instantes.</p>
+  <div class="bar"><i></i></div>
+  <a id="b" class="btn" href="#" rel="sponsored nofollow">Ir para a loja</a>
+  <div class="aviso">Canal de ofertas <b>afiliado</b>, independente e sem vínculo oficial com a loja. Preço e estoque sujeitos a alteração: confira na página da loja antes de comprar.</div>
+</div>
+<script>
+(function(){
+  var SB='https://fglwlmuyfojabpilhcdc.supabase.co';
+  var KEY='sb_publishable_ZsrsSUmFlaPBKu_OeTGbMQ_zFKihTo4';
+  var q=new URLSearchParams(location.search);
+  // slug: ?o=slug  | ou /go/slug (via 404.html guarda em sessionStorage)  | ou #slug
+  var slug=(q.get('o')||'').toLowerCase();
+  if(!slug){try{slug=(sessionStorage.getItem('go_slug')||'').toLowerCase();sessionStorage.removeItem('go_slug')}catch(e){}}
+  if(!slug&&location.hash)slug=location.hash.slice(1).toLowerCase();
+  slug=slug.replace(/[^a-z0-9-]/g,'').slice(0,63);
+  var origem=(q.get('s')||'').replace(/[^a-z0-9_-]/gi,'').slice(0,40)||null;
+
+  function falha(msg){
+    document.getElementById('t').textContent='Oferta indisponível';
+    document.getElementById('s').textContent=msg||'Este link expirou ou não existe.';
+    document.querySelector('.bar').style.display='none';
+  }
+  if(!slug){falha('Link incompleto.');return}
+
+  fetch(SB+'/rest/v1/rpc/go_clique',{
+    method:'POST',
+    headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+KEY},
+    body:JSON.stringify({p_slug:slug,p_origem:origem,p_referrer:document.referrer||null,p_ua:navigator.userAgent||null})
+  }).then(function(r){return r.ok?r.json():Promise.reject(r.status)})
+    .then(function(dest){
+      if(!dest||typeof dest!=='string'||dest.indexOf('https://')!==0){falha();return}
+      var b=document.getElementById('b');b.href=dest;
+      setTimeout(function(){b.style.display='inline-block'},1800);
+      setTimeout(function(){location.replace(dest)},350);
+    })
+    .catch(function(){falha('Não consegui abrir agora. Tente de novo em instantes.')});
+})();
+</script>
+</body>
+</html>

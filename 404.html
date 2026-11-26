@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<title>Abrindo…</title>
+<script>
+// Fallback do GitHub Pages: /tracker/go/<oferta> cai aqui e é repassado para /tracker/go/
+(function(){
+  var m=location.pathname.match(/\/go\/([a-z0-9-]+)\/?$/i);
+  if(m){
+    try{sessionStorage.setItem('go_slug',m[1].toLowerCase())}catch(e){}
+    var base=location.pathname.slice(0,location.pathname.toLowerCase().lastIndexOf('/go/'));
+    location.replace(base+'/go/'+location.search+location.hash);
+  }
+})();
+</script></head>
+<body style="background:#0f0d0c;color:#f3ece4;font-family:system-ui;display:grid;place-items:center;min-height:100vh"><p>Página não encontrada.</p></body></html>
